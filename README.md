@@ -61,7 +61,7 @@ If port `8080` is already occupied, either stop the process using it or select a
 | `NODE_ENV` | `server/configure.js` | Use `production` for production cookie and proxy behavior. |
 | `SESSION_SECRET` | `server/configure.js` | Session signing secret. Required in production. |
 | `COOKIE_SECRET` | `server/configure.js` | Cookie signing secret. Falls back to `SESSION_SECRET`; required in production. |
-| `MONGODB_URI` | Intended deployment setting | MongoDB connection URI. See the warning below about the current `lama.js` implementation. |
+| `MONGODB_URI` | `lama.js` | MongoDB connection URI. Overrides the local properties file. |
 
 In production, set secrets before starting the server:
 
@@ -75,17 +75,23 @@ npm start
 
 The application rejects production startup when either required secret is missing. Local development uses development fallback secrets so the app can boot without additional configuration.
 
-### Important database warning
+### Database connection
 
-The current [lama.js](lama.js) contains a MongoDB Atlas connection string with embedded credentials. Treat those credentials as compromised: rotate the database password and remove the URI from source control. The startup file should be changed to read `process.env.MONGODB_URI` before deploying.
+For local development, create `server/properties.local.file`. This file is ignored by Git and must contain:
 
-The intended form is:
-
-```js
-var mongoUri = process.env.MONGODB_URI;
+```properties
+[database]
+mongoUri = mongodb://127.0.0.1:27017/lama
 ```
 
-Do not commit database credentials, session secrets, or cookie secrets.
+For hosted or production databases, prefer the environment variable:
+
+```powershell
+$env:MONGODB_URI="mongodb://user:password@host:27017/lama"
+npm start
+```
+
+Do not commit database credentials, session secrets, or cookie secrets. Rotate any credentials that were previously committed to source control.
 
 ### Site settings
 
@@ -199,7 +205,6 @@ The test suite and route-render regression coverage verify that authenticated us
 - Do not run two Lama instances on the same host and port.
 - Restart the server after changing JavaScript, environment variables, or `server/properties.file`.
 - Use HTTPS in production because sessions and CSRF tokens rely on secure cookie settings there.
-- Rotate the exposed MongoDB credentials in the current `lama.js` before deployment.
 - The declared `connect-mongo` dependency is not currently wired into `server/configure.js`; installing a package alone does not change the active session store.
 
 ## License

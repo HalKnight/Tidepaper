@@ -1,0 +1,4 @@
+# Copy this file to properties.local.file and set your local or hosted URI.
+# properties.local.file is ignored by Git.
+[database]
+mongoUri = mongodb://127.0.0.1:27017/lama

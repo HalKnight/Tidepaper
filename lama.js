@@ -26,11 +26,26 @@ var express = require("express"),
   config = require("./server/configure"),
   app = express(),
   passport = require("passport"),
-  mongoose = require("mongoose");
+  mongoose = require("mongoose"),
+  fs = require("fs"),
+  path = require("path"),
+  PropertiesReader = require("properties-reader");
 
 var server_port = process.env.PORT || 8080;
 var server_ip_address = process.env.HOST || "127.0.0.1";
-var mongoUri = "mongodb://sysLama:123@localhost/Lama";
+var localPropertiesPath = path.join(__dirname, "server", "properties.local.file");
+var localProperties = fs.existsSync(localPropertiesPath)
+  ? PropertiesReader(localPropertiesPath)
+  : null;
+var mongoUri =
+  process.env.MONGODB_URI ||
+  (localProperties && localProperties.get("database.mongoUri"));
+
+if (!mongoUri) {
+  throw new Error(
+    "MongoDB URI is required. Set MONGODB_URI or create server/properties.local.file."
+  );
+}
 
 app.set("views", __dirname + "/views");
 require("./config/passport.js")(passport);

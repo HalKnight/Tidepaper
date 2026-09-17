@@ -9,6 +9,7 @@ All notable changes made during the Lama stabilization pass are recorded here.
 - Added protected user deletion with an option to keep or delete the user's articles; deleting articles also deletes their attached comments.
 - User-authored comments are removed when the user account is deleted, while comments on retained articles remain.
 - Added a Search by Date sidebar section with inclusive start and end date filters.
+- Moved the MongoDB URI out of `lama.js` into an ignored local properties file, with `MONGODB_URI` environment-variable override support.
 
 ## 2.1.0 - 2026-09-17
 
