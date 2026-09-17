@@ -36,10 +36,12 @@ module.exports = function(passport) {
     done(null, user.id);
   });
 
-  passport.deserializeUser(function(id, done) {
-    User.findById(id, function(err, user) {
-      done(err, user);
-    });
+  passport.deserializeUser(async function(id, done) {
+    try {
+      done(null, await User.findById(id));
+    } catch (err) {
+      done(err);
+    }
   });
 
   // =========================================================================
@@ -54,52 +56,29 @@ module.exports = function(passport) {
         passwordField: "password",
         passReqToCallback: true
       },
-      function(req, email, password, done, name) {
-        process.nextTick(function() {
+      async function(req, email, password, done, name) {
+        try {
           email = String(email || "").trim().toLowerCase();
 
-          User.countDocuments(
-            {
-              "local.admin": true
-            },
-            function(err, adminCount) {
-              if (err) return done(err);
+          var adminCount = await User.countDocuments({ "local.admin": true });
+          var user = await User.findOne({ "local.email": email });
+          if (user) {
+            return done(null, false, {
+              message: "That email is already taken."
+            });
+          }
 
-              User.findOne(
-                {
-                  "local.email": email
-                },
-                function(err, user) {
-                  if (err) return done(err);
-
-                  if (user) {
-                    return done(null, false, {
-                      message: "That email is already taken."
-                    });
-                  }
-
-                  var newUser = new User();
-                  newUser.local.email = email;
-                  newUser.local.password = newUser.generateHash(password);
-                  newUser.local.name = req.body.name;
-                  newUser.local.admin = adminCount === 0;
-                  newUser.markModified("local");
-
-                  try {
-                    newUser.save(function(err) {
-                      if (err) {
-                        return done(err);
-                      }
-                      return done(null, newUser);
-                    });
-                  } catch (err) {
-                    return done(err);
-                  }
-                }
-              );
-            }
-          );
-        });
+          var newUser = new User();
+          newUser.local.email = email;
+          newUser.local.password = newUser.generateHash(password);
+          newUser.local.name = req.body.name;
+          newUser.local.admin = adminCount === 0;
+          newUser.markModified("local");
+          await newUser.save();
+          return done(null, newUser);
+        } catch (err) {
+          return done(err);
+        }
       }
     )
   );
@@ -116,8 +95,8 @@ module.exports = function(passport) {
         passwordField: "password",
         passReqToCallback: true
       },
-      function(req, email, password, done, name) {
-        process.nextTick(function() {
+      async function(req, email, password, done, name) {
+        try {
           email = String(email || "").trim().toLowerCase();
           var currentEmail = req.user && req.user.local ? String(req.user.local.email || "").trim().toLowerCase() : null;
 
@@ -127,62 +106,35 @@ module.exports = function(passport) {
             });
           }
 
-          User.findOne(
-            {
-              "local.email": email
-            },
-            function(err, existingUser) {
-              if (err) return done(err);
-              if (existingUser && existingUser.local.email !== currentEmail) {
-                return done(null, false, {
-                  message: "That email is already taken."
-                });
-              }
+          var existingUser = await User.findOne({ "local.email": email });
+          if (existingUser && existingUser.local.email !== currentEmail) {
+            return done(null, false, {
+              message: "That email is already taken."
+            });
+          }
 
-              User.findOne(
-                {
-                  "local.email": currentEmail
-                },
-                function(err, user) {
-                  if (err) return done(err);
-                  if (!user) {
-                    return done(null, false, {
-                      message: "User not found."
-                    });
-                  }
+          var user = await User.findOne({ "local.email": currentEmail });
+          if (!user) {
+            return done(null, false, { message: "User not found." });
+          }
 
-                  var oldEmail = user.local.email;
-                  var newName = req.body.name || user.local.name;
-                  user.local.email = email;
-                  user.local.name = newName;
-                  if (password && password !== "") {
-                    user.local.password = user.generateHash(password);
-                  }
+          var oldEmail = user.local.email;
+          var newName = req.body.name || user.local.name;
+          user.local.email = email;
+          user.local.name = newName;
+          if (password && password !== "") {
+            user.local.password = user.generateHash(password);
+          }
 
-                  user.save(function(err) {
-                    if (err) return done(err);
-
-                    Article.updateMany(
-                      {
-                        userID: oldEmail
-                      },
-                      {
-                        $set: {
-                          userID: email,
-                          userName: newName
-                        }
-                      },
-                      function(err) {
-                        if (err) return done(err);
-                        return done(null, user);
-                      }
-                    );
-                  });
-                }
-              );
-            }
+          await user.save();
+          await Article.updateMany(
+            { userID: oldEmail },
+            { $set: { userID: email, userName: newName } }
           );
-        });
+          return done(null, user);
+        } catch (err) {
+          return done(err);
+        }
       }
     )
   );
@@ -199,8 +151,8 @@ module.exports = function(passport) {
         passwordField: "password",
         passReqToCallback: true
       },
-      function(req, email, password, done, name, admin) {
-        process.nextTick(function() {
+      async function(req, email, password, done, name, admin) {
+        try {
           email = String(email || "").trim().toLowerCase();
           var targetEmail = req.cookies && req.cookies.cookie_userEmail ? String(req.cookies.cookie_userEmail).trim().toLowerCase() : null;
 
@@ -210,63 +162,36 @@ module.exports = function(passport) {
             });
           }
 
-          User.findOne(
-            {
-              "local.email": email
-            },
-            function(err, existingUser) {
-              if (err) return done(err);
-              if (existingUser && existingUser.local.email !== targetEmail) {
-                return done(null, false, {
-                  message: "That email is already taken."
-                });
-              }
+          var existingUser = await User.findOne({ "local.email": email });
+          if (existingUser && existingUser.local.email !== targetEmail) {
+            return done(null, false, {
+              message: "That email is already taken."
+            });
+          }
 
-              User.findOne(
-                {
-                  "local.email": targetEmail
-                },
-                function(err, user) {
-                  if (err) return done(err);
-                  if (!user) {
-                    return done(null, false, {
-                      message: "User not found."
-                    });
-                  }
+          var user = await User.findOne({ "local.email": targetEmail });
+          if (!user) {
+            return done(null, false, { message: "User not found." });
+          }
 
-                  var oldEmail = user.local.email;
-                  var newName = req.body.name || user.local.name;
-                  user.local.email = email;
-                  user.local.name = newName;
-                  if (password && password !== "") {
-                    user.local.password = user.generateHash(password);
-                  }
-                  user.local.admin = req.body.admin === "on";
+          var oldEmail = user.local.email;
+          var newName = req.body.name || user.local.name;
+          user.local.email = email;
+          user.local.name = newName;
+          if (password && password !== "") {
+            user.local.password = user.generateHash(password);
+          }
+          user.local.admin = req.body.admin === "on";
 
-                  user.save(function(err) {
-                    if (err) return done(err);
-
-                    Article.updateMany(
-                      {
-                        userID: oldEmail
-                      },
-                      {
-                        $set: {
-                          userID: email,
-                          userName: newName
-                        }
-                      },
-                      function(err) {
-                        if (err) return done(err);
-                        return done(null, user);
-                      }
-                    );
-                  });
-                }
-              );
-            }
+          await user.save();
+          await Article.updateMany(
+            { userID: oldEmail },
+            { $set: { userID: email, userName: newName } }
           );
-        });
+          return done(null, user);
+        } catch (err) {
+          return done(err);
+        }
       }
     )
   );
@@ -283,28 +208,21 @@ module.exports = function(passport) {
         passwordField: "password",
         passReqToCallback: true
       },
-      function(req, email, password, done) {
+      async function(req, email, password, done) {
         email = String(email || "").trim().toLowerCase();
 
-        User.findOne(
-          {
-            "local.email": email
-          },
-          function(err, user) {
-            if (err) return done(err);
-
-            if (!user) {
-              return done(null, false, {
-                message: "No user found."
-              });
-            }
-            if (!user.validPassword(password))
-              return done(null, false, {
-                message: "Oops! Wrong password."
-              });
-            return done(null, user);
+        try {
+          var user = await User.findOne({ "local.email": email });
+          if (!user) {
+            return done(null, false, { message: "No user found." });
           }
-        );
+          if (!user.validPassword(password)) {
+            return done(null, false, { message: "Oops! Wrong password." });
+          }
+          return done(null, user);
+        } catch (err) {
+          return done(err);
+        }
       }
     )
   );

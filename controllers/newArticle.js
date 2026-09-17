@@ -1,10 +1,8 @@
 /*
 MIT License
-
-Copyright (c) [2017] [Hal Knight]
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
+        if (!article) {
+          return res.redirect("/");
+        }
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
@@ -30,8 +28,11 @@ var scripts = [
     script: "/public/js/editScripts.js"
   }
 ];
-var PropertiesReader = require("properties-reader");
-var properties = new PropertiesReader("./server/properties.file"),
+var PropertiesReaderModule = require("properties-reader");
+var PropertiesReader = PropertiesReaderModule.default ||
+  PropertiesReaderModule.propertiesReader ||
+  PropertiesReaderModule;
+var properties = PropertiesReader({ sourceFile: "./server/properties.file" }),
   lamaHeader = properties.get("main.lamaTitle"),
   lamaVersion = properties.get("main.version"),
   lamaTwitter = properties.get("main.twitter"),
@@ -116,9 +117,8 @@ module.exports = {
           $eq: req.params.article_id
         }
       },
-      function(err, article) {
-        if (err) {
-          console.error("Article edit lookup failed:", err);
+      ).lean().exec().then(function(article) {
+        if (!article) {
           return res.redirect("/");
         }
 
@@ -130,7 +130,9 @@ module.exports = {
             res.redirect("/");
           }
         });
-      }
-    ).lean();
+      }).catch(function(err) {
+        console.error("Article edit lookup failed:", err);
+        return res.redirect("/");
+      });
   }
 };

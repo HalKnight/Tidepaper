@@ -29,13 +29,16 @@ var express = require("express"),
   mongoose = require("mongoose"),
   fs = require("fs"),
   path = require("path"),
-  PropertiesReader = require("properties-reader");
+  PropertiesReaderModule = require("properties-reader"),
+  PropertiesReader = PropertiesReaderModule.default ||
+    PropertiesReaderModule.propertiesReader ||
+    PropertiesReaderModule;
 
 var server_port = process.env.PORT || 8080;
 var server_ip_address = process.env.HOST || "127.0.0.1";
 var localPropertiesPath = path.join(__dirname, "server", "properties.local.file");
 var localProperties = fs.existsSync(localPropertiesPath)
-  ? PropertiesReader(localPropertiesPath)
+  ? PropertiesReader({ sourceFile: localPropertiesPath })
   : null;
 var mongoUri =
   process.env.MONGODB_URI ||
@@ -53,13 +56,9 @@ require("./config/passport.js")(passport);
 app = config(app);
 
 mongoose.connect(mongoUri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
   serverSelectionTimeoutMS: 5000
-}, function(err) {
-  if (err) {
-    console.error("MongoDB connection error:", err.message);
-  }
+}).catch(function(err) {
+  console.error("MongoDB connection error:", err.message);
 });
 
 mongoose.connection.on("open", function() {

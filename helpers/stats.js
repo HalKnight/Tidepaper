@@ -30,48 +30,46 @@ module.exports = function(callback) {
   async.parallel(
     [
       function(next) {
-        models.Article.countDocuments({}, next);
+        models.Article.countDocuments({}).then(function(count) {
+          next(null, count);
+        }).catch(next);
       },
       function(next) {
-        models.Comment.countDocuments({}, next);
+        models.Comment.countDocuments({}).then(function(count) {
+          next(null, count);
+        }).catch(next);
       },
       function(next) {
-        models.Article.aggregate(
-          [{
+        models.Article.aggregate([{
             $group: {
               _id: null,
               viewsTotal: {
                 $sum: "$views"
               }
             }
-          }],
-          function(err, result) {
+          }]).then(function(result) {
             var viewsTotal = 0;
             if (result !== undefined && result.length > 0) {
               viewsTotal += result[0].viewsTotal;
             }
             next(null, viewsTotal);
-          }
-        );
+          }).catch(next);
       },
       function(next) {
-        models.Article.aggregate(
-          [{
+        models.Article.aggregate([{
             $group: {
               _id: null,
               likesTotal: {
                 $sum: "$likes"
               }
             }
-          }],
-          function(err, result) {
+          }]).then(function(result) {
             var likesTotal = 0;
             if (result !== undefined && result.length > 0) {
               likesTotal += result[0].likesTotal;
             }
             next(null, likesTotal);
-          }
-        );
+          }).catch(next);
       }
     ],
     function(err, results) {

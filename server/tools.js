@@ -28,8 +28,11 @@ var css = [
     css: "/public/css/readable.css"
   }
 ];
-var PropertiesReader = require("properties-reader");
-var properties = PropertiesReader("./server/properties.file"),
+var PropertiesReaderModule = require("properties-reader");
+var PropertiesReader = PropertiesReaderModule.default ||
+  PropertiesReaderModule.propertiesReader ||
+  PropertiesReaderModule;
+var properties = PropertiesReader({ sourceFile: "./server/properties.file" }),
   lamaHeader = properties.get("main.lamaTitle"),
   lamaVersion = properties.get("main.version"),
   settingsID = properties.get("admin.settingsID"),
@@ -43,18 +46,13 @@ module.exports = {
       return callback(null, {});
     }
 
-    UserModel.findOne(
-      {
-        "local.email": req.user.local.email
-      },
-      function(err, user) {
-        if (err) {
-          return callback(err);
-        }
-
+    UserModel.findOne({
+      "local.email": req.user.local.email
+    }).lean().exec()
+      .then(function(user) {
         callback(null, user || {});
-      }
-    ).lean();
+      })
+      .catch(callback);
   },
 
   getSettings: function(viewModel, res, page, editSettings) {
@@ -64,15 +62,10 @@ module.exports = {
     viewModel.lama.facebook = lamaFacebook;
     viewModel.styleSheet = css;
 
-    Settings.findOne(
-      {
-        settings_id: settingsID
-      },
-      function(err, settings) {
-        if (err) {
-          console.error("Settings lookup failed:", err);
-          return res.status(500).send("Unable to load settings.");
-        }
+    Settings.findOne({
+      settings_id: settingsID
+    }).lean().exec()
+      .then(function(settings) {
         if (settings) {
           viewModel.lama.header = settings.header;
           viewModel.lama.twitter = settings.twitter;
@@ -101,7 +94,10 @@ module.exports = {
           }
           res.render(page, viewModel);
         }
-      }
-    ).lean();
+      })
+      .catch(function(err) {
+        console.error("Settings lookup failed:", err);
+        res.status(500).send("Unable to load settings.");
+      });
   }
 };

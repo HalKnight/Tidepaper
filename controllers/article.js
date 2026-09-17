@@ -28,17 +28,17 @@ var fs = require("fs"),
   UserModel = require("../models/user"),
   md5 = require("MD5");
 var Tools = require("../server/tools.js");
-var PropertiesReader = require("properties-reader");
-var properties = PropertiesReader("./server/properties.file"),
+var PropertiesReaderModule = require("properties-reader");
+var PropertiesReader = PropertiesReaderModule.default ||
+  PropertiesReaderModule.propertiesReader ||
+  PropertiesReaderModule;
+var properties = PropertiesReader({ sourceFile: "./server/properties.file" }),
   lamaHeader = properties.get("main.lamaTitle"),
   lamaVersion = properties.get("main.version"),
   lamaTwitter = properties.get("main.twitter"),
   lamaFacebook = properties.get("main.facebook");
-var list = require("badwords-list"),
-  arrayFilter = list.array;
 var Filter = require("bad-words"),
   filter = new Filter();
-filter.addWords(...arrayFilter);
 var scripts = [
   {
     script: "/public/js/editScripts.js"
@@ -84,17 +84,13 @@ module.exports = {
           {
             articleID: req.params.article_id
           },
-          function(err, article) {
-            if (err) {
-              console.error("Article lookup failed:", err);
-              return res.redirect("/");
-            }
+          ).lean().exec().then(function(article) {
             if (article) {
               article.views = article.views + 1;
               viewModel.article = article;
               var hydratedArticle = Models.Article.hydrate(article);
               hydratedArticle.markModified("views");
-              hydratedArticle.save(function(err, article) {
+              hydratedArticle.save().catch(function(err) {
                 if (err) {
                   console.error("Article view increment failed:", err);
                 }
@@ -118,7 +114,7 @@ module.exports = {
                     timestamp: 1
                   }
                 },
-                function(err, comments) {
+                ).lean().exec().then(function(comments) {
                   viewModel.comments = comments;
                   sidebar(viewModel, function(viewModel) {
                     if (
@@ -131,13 +127,14 @@ module.exports = {
                       Tools.getSettings(viewModel, res, "articlepublic");
                     }
                   });
-                }
-              ).lean();
+                });
             } else {
               res.redirect("/");
             }
-          }
-        ).lean();
+          }).catch(function(err) {
+            console.error("Article lookup failed:", err);
+            return res.redirect("/");
+          });
       });
       return;
     }
@@ -146,17 +143,13 @@ module.exports = {
       {
         articleID: req.params.article_id
       },
-      function(err, article) {
-        if (err) {
-          console.error("Article lookup failed:", err);
-          return res.redirect("/");
-        }
+      ).lean().exec().then(function(article) {
         if (article) {
           article.views = article.views + 1;
           viewModel.article = article;
           var hydratedArticle = Models.Article.hydrate(article);
           hydratedArticle.markModified("views");
-          hydratedArticle.save(function(err, article) {
+          hydratedArticle.save().catch(function(err) {
             if (err) {
               console.error("Article view increment failed:", err);
             }
@@ -180,7 +173,7 @@ module.exports = {
                 timestamp: 1
               }
             },
-            function(err, comments) {
+            ).lean().exec().then(function(comments) {
               viewModel.comments = comments;
               //viewModel.user = JSON.stringify(req.user);
               sidebar(viewModel, function(viewModel) {
@@ -194,13 +187,14 @@ module.exports = {
                   Tools.getSettings(viewModel, res, "articlepublic");
                 }
               });
-            }
-          ).lean();
+            });
         } else {
           res.redirect("/");
         }
-      }
-    ).lean();
+      }).catch(function(err) {
+        console.error("Article lookup failed:", err);
+        return res.redirect("/");
+      });
   },
   create: function(req, res) {
     var savePost = function() {
@@ -225,52 +219,35 @@ module.exports = {
             description: req.body.description,
             blogbody: req.body.blogbody
           }
-        },
-        function(err, exArticle) {
-          if (err) {
-            console.error("Article update failed:", err);
-            return res.redirect("/home");
-          }
-          if (exArticle) {
-            res.redirect("/articles/" + exArticle.articleID);
-          } else {
-            Models.Article.find(
-              {
-                articleID: postUrl
-              },
-              function(err, articles) {
-                if (err) {
-                  console.error("Article existence check failed:", err);
-                  return res.redirect("/home");
-                }
-                if (articles.length > 0) {
-                  savePost();
-                } else {
-                  if (req.body.blogbody == undefined) {
-                    return res.redirect("/home");
-                  }
-
-                  var newPost = new Models.Article({
-                    title: req.body.title,
-                    articleID: postUrl,
-                    description: req.body.description,
-                    blogbody: req.body.blogbody,
-                    userID: req.user.local.email,
-                    userName: req.user.local.name
-                  });
-                  newPost.save(function(err, article) {
-                    if (err) {
-                      console.error("Article creation failed:", err);
-                      return res.redirect("/home");
-                    }
-                    res.redirect("/articles/" + article.articleID);
-                  });
-                }
-              }
-            );
-          }
         }
-      );
+      ).then(function(exArticle) {
+          if (exArticle) {
+            return res.redirect("/articles/" + exArticle.articleID);
+          }
+          return Models.Article.find({ articleID: postUrl }).exec().then(function(articles) {
+            if (articles.length > 0) {
+              return savePost();
+            }
+            if (req.body.blogbody == undefined) {
+              return res.redirect("/home");
+            }
+
+            var newPost = new Models.Article({
+              title: req.body.title,
+              articleID: postUrl,
+              description: req.body.description,
+              blogbody: req.body.blogbody,
+              userID: req.user.local.email,
+              userName: req.user.local.name
+            });
+            return newPost.save().then(function(article) {
+              res.redirect("/articles/" + article.articleID);
+            });
+          });
+        }).catch(function(err) {
+          console.error("Article update failed:", err);
+          return res.redirect("/home");
+        });
     };
 
     savePost();
@@ -279,30 +256,29 @@ module.exports = {
     Models.Article.findOne(
       {
         articleID: req.params.article_id
-      },
-      function(err, article) {
-        if (!err && article) {
+      }
+    ).exec().then(function(article) {
+        if (article) {
           article.likes = article.likes + 1;
-          article.save(function(err) {
-            if (err) {
-              res.json(err);
-            } else {
-              res.json({
-                likes: article.likes
-              });
-            }
+          article.save().then(function() {
+            res.json({
+              likes: article.likes
+            });
+          }).catch(function(err) {
+            res.json(err);
           });
         }
-      }
-    );
+      }).catch(function(err) {
+        res.json(err);
+      });
   },
   comment: function(req, res) {
     Models.Article.findOne(
       {
         articleID: req.params.article_id
-      },
-      function(err, article) {
-        if (!err && article) {
+      }
+    ).exec().then(function(article) {
+        if (article) {
           function isEmpty(value) {
             return (
               (typeof value == "string" && !value.trim()) ||
@@ -323,21 +299,20 @@ module.exports = {
           }
           newComment.gravatar = md5(newComment.email);
           newComment.article_id = article.articleID;
-          newComment.save(function(err, comment) {
-            if (err) {
-              console.error("Comment save failed:", err);
-              return res.redirect("/articles/" + article.articleID);
-            }
-
+          newComment.save().then(function(comment) {
             res.redirect(
               "/articles/" + article.articleID + "#" + comment.article_id
             );
+          }).catch(function(err) {
+            console.error("Comment save failed:", err);
+            return res.redirect("/articles/" + article.articleID);
           });
         } else {
           res.redirect("/");
         }
-      }
-    );
+      }).catch(function() {
+        return res.redirect("/");
+      });
   },
   remove: function(req, res) {
     var articleQuery = {
@@ -349,36 +324,25 @@ module.exports = {
 
     Models.Article.findOne(
       articleQuery,
-      function(err, article) {
-        if (err) {
-          console.error("Article delete lookup failed:", err);
-          return res.json(false);
-        }
-
+      ).exec().then(function(article) {
         if (article) {
           Models.Comment.deleteMany(
             {
               article_id: article.articleID
-            },
-            function(err) {
-              if (err) {
-                return res.json(false);
-              }
-
-              article.remove(function(err) {
-                if (!err) {
-                  res.json(true);
-                } else {
-                  res.json(false);
-                }
-              });
             }
-          );
+            ).then(function() {
+              return article.deleteOne();
+            }).then(function() {
+              res.json(true);
+            }).catch(function() {
+              res.json(false);
+            });
         } else {
           res.redirect("back");
         }
-      }
-    );
+      }).catch(function() {
+        return res.json(false);
+      });
   },
 
   removeComment: function(req, res) {
@@ -391,24 +355,16 @@ module.exports = {
       match.timestamp = new Date(commentId);
     }
 
-    Models.Comment.findOne(match, function(err, comment) {
-      if (err) {
-        return res.json(false);
-      }
-
+    Models.Comment.findOne(match).exec().then(function(comment) {
       if (!comment) {
         return res.redirect("back");
       }
 
-      Models.Article.findOne(
+      return Models.Article.findOne(
         {
           articleID: comment.article_id
-        },
-        function(err, article) {
-          if (err) {
-            return res.json(false);
-          }
-
+        }
+        ).exec().then(function(article) {
           var canDelete =
             req.user.local.admin ||
             (article && article.userID === req.user.local.email) ||
@@ -417,19 +373,16 @@ module.exports = {
             return res.status(403).json(false);
           }
 
-          Models.Comment.deleteOne(
+          return Models.Comment.deleteOne(
             {
               _id: comment._id
-            },
-            function(err) {
-              if (err) {
-                return res.json(false);
-              }
-              return res.json(true);
             }
-          );
-        }
-      );
+            ).then(function() {
+              return res.json(true);
+            });
+        });
+    }).catch(function() {
+      return res.json(false);
     });
   }
 };

@@ -26,8 +26,11 @@ var Article = require("../models/article");
 var Comment = require("../models/comment");
 var Tools = require("../server/tools.js");
 var sidebar = require("../helpers/sidebar");
-var PropertiesReader = require("properties-reader");
-var properties = PropertiesReader("./server/properties.file"),
+var PropertiesReaderModule = require("properties-reader");
+var PropertiesReader = PropertiesReaderModule.default ||
+  PropertiesReaderModule.propertiesReader ||
+  PropertiesReaderModule;
+var properties = PropertiesReader({ sourceFile: "./server/properties.file" }),
   lamaHeader = properties.get("main.lamaTitle"),
   lamaVersion = properties.get("main.version"),
   lamaTwitter = properties.get("main.twitter"),
@@ -56,11 +59,7 @@ module.exports = {
         lama: {}
       };
 
-      User.find({}, function(err, users) {
-        if (err) {
-          console.error("Admin user list lookup failed:", err);
-          return res.redirect("/login");
-        }
+      User.find({}).lean().exec().then(function(users) {
         if (req.user.local.admin) {
           viewModel.users = users;
           if (!isEmpty(req.user)) {
@@ -79,7 +78,10 @@ module.exports = {
         } else {
           Tools.getSettings(viewModel, res, "home");
         }
-      }).lean();
+      }).catch(function(err) {
+        console.error("Admin user list lookup failed:", err);
+        return res.redirect("/login");
+      });
     } else {
       res.redirect("/login");
     }
@@ -97,22 +99,12 @@ module.exports = {
       return res.status(400).send("You cannot delete your own administrator account.");
     }
 
-    User.findOne({ "local.email": email }, function(err, user) {
-      if (err) {
-        console.error("Admin delete user lookup failed:", err);
-        return res.redirect("/admin");
-      }
-
+    User.findOne({ "local.email": email }).lean().exec().then(function(user) {
       if (!user) {
         return res.redirect("/admin");
       }
 
-      Article.find({ userID: email }, function(err, articles) {
-        if (err) {
-          console.error("Admin delete user article lookup failed:", err);
-          return res.redirect("/admin");
-        }
-
+      return Article.find({ userID: email }).lean().exec().then(function(articles) {
         var articleIds = articles.map(function(article) {
           return article.articleID;
         });
@@ -124,34 +116,19 @@ module.exports = {
           };
         }
 
-        Comment.deleteMany(commentQuery, function(err) {
-            if (err) {
-              console.error("Admin delete user comments failed:", err);
-              return res.redirect("/admin");
-            }
-
-            var finishDelete = function() {
-              User.deleteOne({ _id: user._id }, function(err) {
-                if (err) {
-                  console.error("Admin delete user failed:", err);
-                }
-                return res.redirect("/admin");
-              });
-            };
-
-            if (!deleteArticles) {
-              return finishDelete();
-            }
-
-            Article.deleteMany({ userID: email }, function(err) {
-              if (err) {
-                console.error("Admin delete user articles failed:", err);
-                return res.redirect("/admin");
-              }
-              finishDelete();
-            });
-          });
-      }).lean();
-    }).lean();
+        return Comment.deleteMany(commentQuery).then(function() {
+          if (deleteArticles) {
+            return Article.deleteMany({ userID: email });
+          }
+        }).then(function() {
+          return User.deleteOne({ _id: user._id });
+        }).then(function() {
+          return res.redirect("/admin");
+        });
+      });
+    }).catch(function(err) {
+      console.error("Admin delete user failed:", err);
+      return res.redirect("/admin");
+    });
   }
 };

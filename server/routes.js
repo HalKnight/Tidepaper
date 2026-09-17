@@ -37,8 +37,11 @@ var home = require("../controllers/home"),
   flash = require("connect-flash");
 var Tools = require("../server/tools.js");
 var storage = require("node-persist");
-var PropertiesReader = require("properties-reader");
-var properties = PropertiesReader("./server/properties.file"),
+var PropertiesReaderModule = require("properties-reader");
+var PropertiesReader = PropertiesReaderModule.default ||
+  PropertiesReaderModule.propertiesReader ||
+  PropertiesReaderModule;
+var properties = PropertiesReader({ sourceFile: "./server/properties.file" }),
   settingsID = properties.get("admin.settingsID"),
   lamaHeader = properties.get("main.lamaTitle"),
   lamaVersion = properties.get("main.version"),
@@ -119,23 +122,19 @@ module.exports.initialize = async function(app, passport) {
       noSignup: false,
       lama: {}
     };
-    Settings.findOne(
-      {
-        settings_id: settingsID
-      },
-      function(err, settings) {
-        if (err) {
-          console.error("Login settings lookup failed:", err);
-          return res.redirect("/login");
-        }
+    Settings.findOne({
+      settings_id: settingsID
+    }).exec().then(function(settings) {
         if (settings) {
           if (!settings.newUsers) {
             viewModel.noSignup = true;
           }
         }
         Tools.getSettings(viewModel, res, "login");
-      }
-    );
+      }).catch(function(err) {
+        console.error("Login settings lookup failed:", err);
+        return res.redirect("/login");
+      });
   });
   app.get("/signup", isSignup, function(req, res) {
     var viewModel;
@@ -241,11 +240,9 @@ module.exports.initialize = async function(app, passport) {
         layout: "user",
         lama: {}
       };
-      User.findOne(
-        {
-          "local.email": req.params.user_id
-        },
-        function(err, user) {
+      User.findOne({
+        "local.email": req.params.user_id
+      }).lean().exec().then(function(user) {
           if (err) {
             console.error("Admin edit user lookup failed:", err);
             return res.redirect("/admin");
@@ -266,8 +263,10 @@ module.exports.initialize = async function(app, passport) {
             viewModel.userAdmin = user;
             Tools.getSettings(viewModel, res, "editProfileAdmin");
           }
-        }
-      ).lean();
+        }).catch(function(err) {
+          console.error("Admin edit user lookup failed:", err);
+          return res.redirect("/admin");
+        });
     } else {
       res.redirect("/login");
     }
@@ -332,15 +331,9 @@ module.exports.initialize = async function(app, passport) {
   }
 
   function isSignup(req, res, next) {
-    Settings.findOne(
-      {
-        settings_id: settingsID
-      },
-      function(err, settings) {
-        if (err) {
-          console.error("Signup settings lookup failed:", err);
-          return res.redirect("/login");
-        }
+    Settings.findOne({
+      settings_id: settingsID
+    }).exec().then(function(settings) {
         if (settings) {
           if (settings.newUsers) {
             return next();
@@ -350,7 +343,9 @@ module.exports.initialize = async function(app, passport) {
         } else {
           return next();
         }
-      }
-    );
+      }).catch(function(err) {
+        console.error("Signup settings lookup failed:", err);
+        return res.redirect("/login");
+      });
   }
 };

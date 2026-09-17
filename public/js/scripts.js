@@ -106,7 +106,7 @@ $(function() {
 	});
   
   $('.delete-comment').off('click');
-  $('.delete-comment').on('click', function() {
+	$('.delete-comment').on('click', function(event) {
 		event.preventDefault();
 
 		var $this = $(this);

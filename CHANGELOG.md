@@ -2,6 +2,12 @@
 
 All notable changes made during the Lama stabilization pass are recorded here.
 
+## 3.0.0 - 2026-09-17
+
+- Upgraded the application runtime and dependencies for modern Node.js and npm compatibility.
+- Added the features and fixes documented in the 2.1.1 and 2.1.0 release sections.
+- Updated the application release version to 3.0.0.
+
 ## 2.1.1 - 2026-09-17
 
 - Updated the application release version to 2.1.1.
@@ -10,6 +16,9 @@ All notable changes made during the Lama stabilization pass are recorded here.
 - User-authored comments are removed when the user account is deleted, while comments on retained articles remain.
 - Added a Search by Date sidebar section with inclusive start and end date filters.
 - Moved the MongoDB URI out of `lama.js` into an ignored local properties file, with `MONGODB_URI` environment-variable override support.
+- Upgraded the application dependencies to current major releases and replaced the abandoned `bcrypt-nodejs` package with `bcrypt`.
+- Updated the code for Express 5, Mongoose 9, Passport 0.7, Express Handlebars 9, and the current properties-reader API.
+- Kept the profanity packages on their latest CommonJS-compatible releases because the newest `badwords-list` package is ESM-only.
 
 ## 2.1.0 - 2026-09-17
 
