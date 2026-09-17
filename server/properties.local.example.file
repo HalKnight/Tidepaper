@@ -2,3 +2,6 @@
 # properties.local.file is ignored by Git.
 [database]
 mongoUri = mongodb://127.0.0.1:27017/lama
+[security]
+cookieSecret = replace-with-a-long-random-cookie-secret
+sessionSecret = replace-with-a-long-random-session-secret

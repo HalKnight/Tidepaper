@@ -23,6 +23,7 @@ SOFTWARE.
 */
 var path = require("path"),
   crypto = require("crypto"),
+  fs = require("fs"),
   routes = require("./routes"),
   exphbs = require("express-handlebars"),
   express = require("express"),
@@ -35,7 +36,11 @@ var path = require("path"),
   session = require("express-session"),
   passport = require("passport"),
   LocalStrategy = require("passport-local"),
-  flash = require("connect-flash");
+  flash = require("connect-flash"),
+  PropertiesReaderModule = require("properties-reader"),
+  PropertiesReader = PropertiesReaderModule.default ||
+    PropertiesReaderModule.propertiesReader ||
+    PropertiesReaderModule;
 
 module.exports = function(app) {
   app.engine(
@@ -78,8 +83,16 @@ module.exports = function(app) {
   app.use("/public/", express.static(path.join(__dirname, "../public")));
 
   var isProduction = app.get("env") === "production";
-  var cookieSecret = process.env.COOKIE_SECRET || process.env.SESSION_SECRET;
-  var sessionSecret = process.env.SESSION_SECRET;
+  var localPropertiesPath = path.join(__dirname, "properties.local.file");
+  var localProperties = fs.existsSync(localPropertiesPath)
+    ? PropertiesReader({ sourceFile: localPropertiesPath })
+    : null;
+  var cookieSecret =
+    process.env.COOKIE_SECRET ||
+    (localProperties && localProperties.get("security.cookieSecret"));
+  var sessionSecret =
+    process.env.SESSION_SECRET ||
+    (localProperties && localProperties.get("security.sessionSecret"));
 
   if (isProduction && (!cookieSecret || !sessionSecret)) {
     throw new Error("COOKIE_SECRET and SESSION_SECRET are required in production.");

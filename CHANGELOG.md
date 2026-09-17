@@ -7,6 +7,7 @@ All notable changes made during the Lama stabilization pass are recorded here.
 - Upgraded the application runtime and dependencies for modern Node.js and npm compatibility.
 - Added the features and fixes documented in the 2.1.1 and 2.1.0 release sections.
 - Updated the application release version to 3.0.0.
+- Added local `[security]` properties for `cookieSecret` and `sessionSecret`, with environment variables taking precedence.
 
 ## 2.1.1 - 2026-09-17
 
