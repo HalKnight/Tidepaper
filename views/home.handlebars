@@ -1,0 +1,64 @@
+<!-- MIT License
+
+Copyright (c) [2017] [Hal Knight]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<!DOCTYPE html>
+{{#if messages}}
+  <div class="alert alert-danger">{{message}}</div>
+{{/if}}
+<div>
+	{{#each articles}}
+	<div class="panel panel-primary">
+		{{#if ../user.local.admin}}
+		<div style="float: right;">
+			<button class="btn btn-danger btn-delete btn-xs delete-post"
+				data-id="{{ articleID }}">
+				<i class="fa fa-times"></i>
+			</button>
+		</div>
+		<div style="float: right;">
+			<a class="btn btn-primary btn-xs" href="/newArticle/{{ articleID }}">Edit</a>
+		</div>
+		{{/if}}
+		<div class="panel-heading">
+			<div>
+				<em class="panel-title">{{ title }}</em>
+			</div>
+		</div>
+		<div class="panel-body">{{{ blogbody }}}</div>
+		<div class="panel-footer">
+			<div class="row">
+				<div class="col-md-10">
+					<button class="btn btn-primary" id="btn-like"
+						data-id="{{ articleID }}">
+						<i class="fa fa-heart"> Like</i>
+					</button>
+					<strong class="likes-count">{{ likes }}</strong> &nbsp; - &nbsp; <i
+						class="fa fa-eye"></i> <strong>{{ views }}</strong> &nbsp; -
+					&nbsp; Posted: <em class="text-muted">{{ timestamp }}</em> &nbsp; -
+					&nbsp; Author: <em class="text-muted">{{ userName }}</em>
+				</div>
+				<a style="float: right; margin-right: 10px !important;"
+					href="/articles/{{ articleID }}" class="btn btn-default">View</a>
+			</div>
+		</div>
+	</div>
+	{{/each}}
+</div>

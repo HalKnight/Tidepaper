@@ -1,0 +1,63 @@
+<!-- MIT License
+
+Copyright (c) [2017] [Hal Knight]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<!DOCTYPE html>
+<div class="container">
+
+	<div class="page-header text-center">
+		<h1>
+			<span class="fa"></span> Users
+		</h1>
+	</div>
+	{{#each users}}
+	<div class="row">
+		<div class="col-sm-6">
+      <div style="float: left">
+				<a class="btn btn-primary btn-xs"
+					href="/editProfileAdmin/{{ local.email }}">Edit</a>
+			</div>
+			<div style="float: left; margin-left: 4px">
+				<form action="/admin/users/delete" method="post" style="display: inline;"
+					onsubmit="return confirm('Delete this user and all of their articles and comments?');">
+					<input type="hidden" name="_csrf" value="{{../csrfToken}}">
+					<input type="hidden" name="userEmail" value="{{ local.email }}">
+					<select name="deleteArticles" class="input-sm" title="Article handling">
+						<option value="keep">Keep articles</option>
+						<option value="delete">Delete articles</option>
+					</select>
+					<button class="btn btn-danger btn-xs" type="submit">Delete</button>
+				</form>
+			</div>
+			<div class="well">
+				<h3>
+					<span class="fa fa-user">&nbsp;:&nbsp;{{local.name}}</span>
+				</h3>
+
+				<p>
+					<i class="fa fa-envelope" aria-hidden="true"></i>&nbsp;:&nbsp;{{local.email}}<br>
+				</p>
+
+			</div>
+		</div>
+
+	</div>
+	{{/each}}
+</div>

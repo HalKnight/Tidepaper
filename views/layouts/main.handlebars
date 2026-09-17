@@ -1,0 +1,104 @@
+<!-- MIT License
+
+Copyright (c) [2017] [Hal Knight]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>{{lama.header}}</title> 
+<meta name="csrf-token" content="{{csrfToken}}">
+{{#each styleSheet}}
+	<link href="{{css}}" rel="stylesheet">
+{{/each}}
+<link href="/public/css/font-awesome.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="/public/css/styles.css">
+<link rel="stylesheet" type="text/css" href="/public/css/editor.css">
+</head>
+<body>
+	<div>
+		<div class="container">
+			<div class="col-md-12 text-center">
+				<h1>{{lama.header}}</h1>
+				<button class="hamburger" style="display: block; float: right"
+					title="show/hide Stats">&#9776;</button>
+			</div>
+			<div class="col-md-12 text-center">
+				<div style="float: left">
+					<a class="btn btn-primary btn-xs" href="/home">Home</a>
+				</div>
+				<div style="float: left">
+					<a class="btn btn-primary btn-xs" href="/login">Login</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div style="border-top: solid 1px #eee; padding-top: 1em;">
+		<div class="container">
+			<div class="row">
+				<div class="col-sm-12 mainBlog">{{{body}}}</div>
+				<div class="col-sm-4 stats">{{> popular this
+					}} {{> comments this }} {{> searchByAuthor this }} {{> searchByDate this }}</div>
+			</div>
+		</div>
+	</div>
+	<div style="border-top: solid 1px #eee; padding-top: 1em;">
+		<div class="container">
+			<div class="row">
+				<div class="col-sm-12 text-center">
+					<p class="text-muted">{{{lama.version}}}</p>
+					<p class="text-center">
+						<a target="_blank" href="{{{lama.twitter}}}"><i
+							class="fa fa-twitter-square fa-2x text-primary"></i></a> <a
+							target="_blank" href="{{{lama.facebook}}}"><i
+							class="fa fa-facebook-square fa-2x text-primary"></i></a>
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+  <!-- Search-Modal -->
+<div class="modal fade" id="searchArticlesModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        .<p>
+          No Records Found
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+	<script src="/public/js/jquery-3.2.1.js"></script>
+	<script type="text/javascript" src="/public/js/scripts.js"></script>
+	<script type="text/javascript" src="/public/js/bootstrap.js"></script>
+	<script type="text/javascript" src="/public/js/editor.js"></script>
+  <script>
+</script>
+</body>
+</html>
