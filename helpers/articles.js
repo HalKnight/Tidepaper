@@ -25,13 +25,10 @@ var models = require('../models');
 
 module.exports = {
     popular: function(callback) {
-        models.Article.find({}, {}, { limit: 9, sort: { likes: -1 }},
-            function(err, articles) {
-                if (err) {
-                    return callback(err);
-                }
-
-                return callback(null, articles || []);
-            }).lean();
+        models.Article.find({}, {}, { limit: 9, sort: { likes: -1 }}).lean().exec()
+            .then(function(articles) {
+                callback(null, articles || []);
+            })
+            .catch(callback);
     }
 };

@@ -2,7 +2,7 @@
 
 Lama is a server-rendered blog application built with Node.js, Express, MongoDB, Mongoose, Passport, and Handlebars.
 
-Current version: **2.1.1**
+Current version: **3.0.0**
 
 ## Features
 
@@ -20,7 +20,7 @@ Current version: **2.1.1**
 
 ## Requirements
 
-- Node.js 12 or newer. The original project targets Node.js 12; newer Node versions may emit dependency deprecation warnings.
+- Node.js `22.22.2` or newer. The latest Express Handlebars release requires Node.js 22.22.2 or newer.
 - npm
 - MongoDB, either local or hosted
 
@@ -206,6 +206,7 @@ The test suite and route-render regression coverage verify that authenticated us
 - Restart the server after changing JavaScript, environment variables, or `server/properties.file`.
 - Use HTTPS in production because sessions and CSRF tokens rely on secure cookie settings there.
 - The declared `connect-mongo` dependency is not currently wired into `server/configure.js`; installing a package alone does not change the active session store.
+- `bad-words` and `badwords-list` remain on their latest CommonJS-compatible releases because the newest `badwords-list` release is ESM-only and cannot be loaded by this CommonJS application without a larger module-system migration.
 
 ## License
 

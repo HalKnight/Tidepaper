@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 var mongoose = require("mongoose");
-var bcrypt = require("bcrypt-nodejs");
+var bcrypt = require("bcrypt");
 var userSchema = mongoose.Schema({
   local: {
     email: {
@@ -57,7 +57,7 @@ var userSchema = mongoose.Schema({
 });
 
 userSchema.methods.generateHash = function(password) {
-  return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
+  return bcrypt.hashSync(password, 8);
 };
 
 userSchema.methods.validPassword = function(password) {

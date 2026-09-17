@@ -33,33 +33,26 @@ module.exports = {
 			sort : {
 				'timestamp' : -1
 			}
-		},
-			function(err, comments) {
-				if (err) {
-					return callback(err);
-				}
-
+		}).lean().exec()
+			.then(function(comments) {
 				var attachArticle = function(comment, next) {
 					models.Article.findOne({
 						articleID : comment.article_id
-					},
-						function(err, article) {
-							if (err) {
-								return next(err);
-							}
-
+					}).lean().exec()
+						.then(function(article) {
 							comment.article = article;
 							next();
-						}).lean();
+						})
+						.catch(next);
 				};
 
-				async.each(comments || [], attachArticle,
-					function(err) {
-						if (err) {
-							return callback(err);
-						}
-						callback(null, comments || []);
-					});
-			}).lean();
+				async.each(comments || [], attachArticle, function(err) {
+					if (err) {
+						return callback(err);
+					}
+					callback(null, comments || []);
+				});
+			})
+			.catch(callback);
 	}
 };

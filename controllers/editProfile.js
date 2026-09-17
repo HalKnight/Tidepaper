@@ -27,8 +27,11 @@ var fs = require('fs'),
 	Article = require('../models/article'),
 	md5 = require('MD5');
 var Tools = require('../server/tools.js');
-var PropertiesReader = require('properties-reader');
-var properties = PropertiesReader('./server/properties.file'),
+var PropertiesReaderModule = require('properties-reader');
+var PropertiesReader = PropertiesReaderModule.default ||
+	PropertiesReaderModule.propertiesReader ||
+	PropertiesReaderModule;
+var properties = PropertiesReader({ sourceFile: './server/properties.file' }),
 	lamaHeader = properties.get('main.lamaTitle'),
 	lamaVersion = properties.get('main.version'),
 	lamaTwitter = properties.get('main.twitter'),
@@ -62,8 +65,7 @@ module.exports = {
 			'local.email' : {
 				$eq: req.params.user_id
 			}
-		},
-			function(err, user) {
+		}).lean().exec().then(function(user) {
 				if (err) {
 					console.error('Profile admin lookup failed:', err);
 					return res.redirect('/login');
@@ -74,6 +76,9 @@ module.exports = {
 					Tools.getSettings(viewModel, res, 'editProfileAdmin');
 				}
 
-			}).lean();
+			}).catch(function(err) {
+				console.error('Profile admin lookup failed:', err);
+				return res.redirect('/login');
+			});
 	},
 };

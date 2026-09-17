@@ -1,9 +1,5 @@
 /*
 MIT License
-
-Copyright (c) [2017] [Hal Knight]
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
@@ -23,8 +19,11 @@ SOFTWARE.
 */
 var Settings = require("../models/settings");
 var Tools = require("../server/tools.js");
-var PropertiesReader = require("properties-reader");
-var properties = PropertiesReader("./server/properties.file"),
+var PropertiesReaderModule = require("properties-reader");
+var PropertiesReader = PropertiesReaderModule.default ||
+  PropertiesReaderModule.propertiesReader ||
+  PropertiesReaderModule;
+var properties = PropertiesReader({ sourceFile: "./server/properties.file" }),
   lamaHeader = properties.get("main.lamaTitle"),
   lamaVersion = properties.get("main.version"),
   settingsID = properties.get("admin.settingsID"),
@@ -120,14 +119,16 @@ module.exports = {
             {
               upsert: true
             },
-            function(err, lamaSettings) {
+            ).then(function(lamaSettings) {
               if (err) {
                 console.error("Settings update failed:", err);
                 return res.redirect("/");
               }
               Tools.getSettings(viewModel, res, "settings", true);
-            }
-          );
+            }).catch(function(err) {
+              console.error("Settings update failed:", err);
+              return res.redirect("/");
+            });
           return;
         });
         return;
@@ -142,14 +143,16 @@ module.exports = {
         {
           upsert: true
         },
-        function(err, lamaSettings) {
+        ).then(function(lamaSettings) {
           if (err) {
             console.error("Settings update failed:", err);
             return res.redirect("/");
           }
           Tools.getSettings(viewModel, res, "settings", true);
-        }
-      );
+        }).catch(function(err) {
+          console.error("Settings update failed:", err);
+          return res.redirect("/");
+        });
     } else {
       res.redirect("/");
     }

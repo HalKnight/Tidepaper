@@ -26,8 +26,11 @@ var sidebar = require("../helpers/sidebar"),
   UserModel = require("../models/user"),
   Tools = require("../server/tools.js"),
   SettingsModel = require("../models/settings"),
-  PropertiesReader = require("properties-reader"),
-  properties = PropertiesReader("./server/properties.file"),
+  PropertiesReaderModule = require("properties-reader"),
+  PropertiesReader = PropertiesReaderModule.default ||
+    PropertiesReaderModule.propertiesReader ||
+    PropertiesReaderModule,
+  properties = PropertiesReader({ sourceFile: "./server/properties.file" }),
   lamaHeader = properties.get("main.lamaTitle"),
   lamaVersion = properties.get("main.version"),
   settingsID = properties.get("admin.settingsID"),
@@ -68,12 +71,7 @@ module.exports = {
           timestamp: -1
         }
       },
-      function(err, articles) {
-        if (err) {
-          console.error("Home article lookup failed:", err);
-          return res.redirect("/home");
-        }
-
+      ).lean().exec().then(function(articles) {
         if (!articles) {
           articles = [];
         }
@@ -110,8 +108,10 @@ module.exports = {
         }
 
         finishHome();
-      }
-    ).lean();
+      }).catch(function(err) {
+        console.error("Home article lookup failed:", err);
+        return res.redirect("/home");
+      });
   },
 
   author: function(req, res) {
@@ -140,12 +140,7 @@ module.exports = {
           timestamp: -1
         }
       },
-      function(err, articles) {
-        if (err) {
-          console.error("Author search failed:", err);
-          return res.redirect("/home");
-        }
-
+      ).lean().exec().then(function(articles) {
         if (!articles) {
           articles = [];
         }
@@ -170,8 +165,10 @@ module.exports = {
         }
 
         finishHome();
-      }
-    ).lean();
+      }).catch(function(err) {
+        console.error("Author search failed:", err);
+        return res.redirect("/home");
+      });
   },
 
   date: function(req, res) {
@@ -204,12 +201,7 @@ module.exports = {
       },
       {},
       { sort: { timestamp: -1 } },
-      function(err, articles) {
-        if (err) {
-          console.error("Date search failed:", err);
-          return res.redirect("/home");
-        }
-
+      ).lean().exec().then(function(articles) {
         articles = articles || [];
         articles.forEach(function(article) {
           if (article && article.timestamp) {
@@ -243,7 +235,9 @@ module.exports = {
         }
 
         finishSearch();
-      }
-    ).lean();
+      }).catch(function(err) {
+        console.error("Date search failed:", err);
+        return res.redirect("/home");
+      });
   }
 };
