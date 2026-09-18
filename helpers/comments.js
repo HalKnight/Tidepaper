@@ -23,8 +23,7 @@ SOFTWARE.
 */
 
 "use strict"
-var models = require('../models'),
-	async = require('async');
+var models = require('../models');
 
 module.exports = {
 	newest : function(callback) {
@@ -35,23 +34,27 @@ module.exports = {
 			}
 		}).lean().exec()
 			.then(function(comments) {
-				var attachArticle = function(comment, next) {
-					models.Article.findOne({
-						articleID : comment.article_id
-					}).lean().exec()
-						.then(function(article) {
-							comment.article = article;
-							next();
-						})
-						.catch(next);
-				};
-
-				async.each(comments || [], attachArticle, function(err) {
-					if (err) {
-						return callback(err);
-					}
-					callback(null, comments || []);
+				comments = comments || [];
+				var articleIds = comments.map(function(comment) {
+					return comment.article_id;
 				});
+
+				return models.Article.find({
+					articleID: { $in: articleIds }
+				}).lean().exec().then(function(articles) {
+					var articlesById = {};
+					(articles || []).forEach(function(article) {
+						articlesById[article.articleID] = article;
+					});
+
+					comments.forEach(function(comment) {
+						comment.article = articlesById[comment.article_id] || null;
+					});
+					return comments;
+				});
+			})
+			.then(function(comments) {
+				callback(null, comments);
 			})
 			.catch(callback);
 	}

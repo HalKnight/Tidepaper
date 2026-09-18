@@ -14,7 +14,12 @@
 	<div class="panel-body">
 		<blockquote class="post-comment">
 			<form method="post" action="/articles/{{articleID}}/comment">
-				<input type="hidden" name="_csrf" value="{{csrfToken}}">
+				<input type="hidden" name="_csrf" value="{{@root.csrfToken}}">
+				{{#if @root.returnTo}}<input type="hidden" name="returnTo" value="{{@root.returnTo}}">{{/if}}
+				{{#if @root.user}}
+				<input type="hidden" name="name" value="{{ @root.user.local.name }}">
+				<input type="hidden" name="email" value="{{ @root.user.local.email }}">
+				{{else}}
 				<div class="form-group">
 					<label for="comment-name-{{articleID}}">Name:</label>
 					<input id="comment-name-{{articleID}}" class="form-control" type="text" name="name">
@@ -23,6 +28,7 @@
 					<label for="comment-email-{{articleID}}">Email:</label>
 					<input id="comment-email-{{articleID}}" class="form-control" type="text" name="email">
 				</div>
+				{{/if}}
 				<div class="form-group">
 					<label for="comment-body-{{articleID}}">Comment:</label>
 					<textarea id="comment-body-{{articleID}}" class="form-control" name="comment" rows="2"></textarea>
@@ -37,10 +43,31 @@
 		<ul class="media-list">
 			{{#each comments}}
 			<li class="media">
+				<a class="pull-left" href="#">
+					<img class="media-object img-circle"
+						src="{{avatarUrl email}}"
+						alt="Comment avatar">
+				</a>
 				<div class="media-body">
-					{{comment}}<br>
+					<i class="fa fa-comment text-muted" aria-hidden="true"></i>&nbsp;{{comment}}<br>
 					<strong class="media-heading">{{name}}</strong>
 					<small class="text-muted">{{timeago timestamp}}</small>
+					{{#if @root.user.local.admin}}
+					<button style="float: right;" class="btn btn-danger btn-xs btn-delete delete-comment"
+						data-id="{{_id}}" type="button" aria-label="Delete comment">
+						<i class="fa fa-times"></i>
+					</button>
+					{{else if (eq @root.user.local.email email)}}
+					<button style="float: right;" class="btn btn-danger btn-xs btn-delete delete-comment"
+						data-id="{{_id}}" type="button" aria-label="Delete comment">
+						<i class="fa fa-times"></i>
+					</button>
+					{{else if (eq ../userID @root.user.local.email)}}
+					<button style="float: right;" class="btn btn-danger btn-xs btn-delete delete-comment"
+						data-id="{{_id}}" type="button" aria-label="Delete comment">
+						<i class="fa fa-times"></i>
+					</button>
+					{{/if}}
 				</div>
 			</li>
 			{{/each}}

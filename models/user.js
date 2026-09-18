@@ -36,7 +36,9 @@ var userSchema = mongoose.Schema({
     name: String,
     admin: Boolean,
     xUrl: String,
-    facebookUrl: String
+    facebookUrl: String,
+    avatarData: Buffer,
+    avatarContentType: String
   },
   facebook: {
     id: String,

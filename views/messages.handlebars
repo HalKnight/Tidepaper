@@ -69,3 +69,10 @@
 	{{/if}}
 </div>
 {{/if}}
+{{#if messageTotalPages}}
+<div class="message-actions">
+	{{#unless (eq messagePage 1)}}<a class="btn btn-default btn-xs" href="{{#if readMessages}}/messages/read{{else}}/messages{{/if}}?page={{messagePreviousPage}}">Previous</a>{{/unless}}
+	<span class="text-muted">Page {{messagePage}} of {{messageTotalPages}}</span>
+	{{#if (eq messagePage messageTotalPages)}}{{else}}<a class="btn btn-default btn-xs" href="{{#if readMessages}}/messages/read{{else}}/messages{{/if}}?page={{messageNextPage}}">Next</a>{{/if}}
+</div>
+{{/if}}

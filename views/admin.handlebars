@@ -65,4 +65,11 @@ SOFTWARE. -->
 
 	</div>
 	{{/each}}
+	{{#if userTotalPages}}
+	<div class="message-actions">
+		{{#unless (eq userPage 1)}}<a class="btn btn-default btn-xs" href="/admin?page={{userPreviousPage}}">Previous</a>{{/unless}}
+		<span class="text-muted">Page {{userPage}} of {{userTotalPages}}</span>
+		{{#if (eq userPage userTotalPages)}}{{else}}<a class="btn btn-default btn-xs" href="/admin?page={{userNextPage}}">Next</a>{{/if}}
+	</div>
+	{{/if}}
 </div>

@@ -122,6 +122,7 @@ module.exports = {
         lama: {}
       };
     }
+    viewModel.returnTo = req.originalUrl;
 
     var articleQuery = {
       $nor: [
@@ -241,6 +242,7 @@ module.exports = {
         lama: {}
       };
     }
+    viewModel.returnTo = req.originalUrl;
 
     return UserModel.findOne({
       "local.email": userId
@@ -323,6 +325,7 @@ module.exports = {
         lama: {}
       };
     }
+    viewModel.returnTo = req.originalUrl;
 
     ArticleModel.find(
       {
@@ -386,6 +389,7 @@ module.exports = {
     var viewModel = req.isAuthenticated()
       ? { articles: {}, user: {}, layout: "user", lama: {} }
       : { articles: {}, lama: {} };
+    viewModel.returnTo = req.originalUrl;
 
     ArticleModel.find(
       {

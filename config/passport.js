@@ -129,8 +129,16 @@ module.exports = function(passport) {
           user.local.name = newName;
           user.local.xUrl = socialUrl(req.body.xUrl);
           user.local.facebookUrl = socialUrl(req.body.facebookUrl);
-          if (password && password !== "") {
-            user.local.password = user.generateHash(password);
+          if (req.body.useDefaultAvatar === "on") {
+            user.local.avatarData = undefined;
+            user.local.avatarContentType = undefined;
+          } else if (req.file) {
+            user.local.avatarData = req.file.buffer;
+            user.local.avatarContentType = req.file.mimetype;
+          }
+          var newPassword = req.body.newPassword;
+          if (newPassword && newPassword !== "") {
+            user.local.password = user.generateHash(newPassword);
           }
 
           await user.save();
@@ -140,6 +148,7 @@ module.exports = function(passport) {
           );
           return done(null, user);
         } catch (err) {
+          console.error("Local profile update failed:", err);
           return done(err);
         }
       }
@@ -185,8 +194,9 @@ module.exports = function(passport) {
           var newName = req.body.name || user.local.name;
           user.local.email = email;
           user.local.name = newName;
-          if (password && password !== "") {
-            user.local.password = user.generateHash(password);
+          var newAdminPassword = req.body.newPassword;
+          if (newAdminPassword && newAdminPassword !== "") {
+            user.local.password = user.generateHash(newAdminPassword);
           }
           user.local.admin = req.body.admin === "on";
 

@@ -63,6 +63,11 @@ module.exports = function(app) {
             return false;
           }
         },
+        avatarUrl: function(email) {
+          // Guard against an empty segment (e.g. anonymous comments with no email),
+          // which would not match the /users/avatar/:email route.
+          return "/users/avatar/" + encodeURIComponent(String(email || "").trim() || "guest");
+        },
         allowProtoMethodsByDefault: true,
         allowProtoPropertiesByDefault: true,
         allowedProtoMethods: true
@@ -160,7 +165,8 @@ module.exports = function(app) {
     var isArticleCreate = req.method === "POST" && req.path === "/articles";
     var isArticleUpload = req.method === "POST" && /\/articles\/[^/]+\/attachments$/.test(req.path);
     var isSettingsUpload = req.method === "POST" && req.path === "/settings";
-    if (isMultipartUpload && (isMessageUpload || isArticleCreate || isArticleUpload || isSettingsUpload)) {
+    var isProfileUpload = req.method === "POST" && req.path === "/editProfile";
+    if (isMultipartUpload && (isMessageUpload || isArticleCreate || isArticleUpload || isSettingsUpload || isProfileUpload)) {
       return next();
     }
 
@@ -178,6 +184,11 @@ module.exports = function(app) {
   });
 
   routes.initialize(app, passport);
+
+  app.use(function(err, req, res, next) {
+    console.error("Unhandled request error:", err);
+    next(err);
+  });
 
   if ("development" === app.get("env")) {
     app.use(errorHandler());

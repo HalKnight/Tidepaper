@@ -2,6 +2,15 @@
 
 All notable changes made during the Tidepaper stabilization pass are recorded here.
 
+## 3.6.0 - 2026-09-18
+
+- Fixed a profile-icon upload safety check that forwarded its resolved result to Express's `next()`, which caused `POST /editProfile` to fail with a 500 error whenever an avatar was uploaded.
+- Fixed `POST /editProfile` and `POST /editProfileAdmin` rejecting profile updates with a "Missing credentials" error whenever the password field was left blank to keep the current password.
+- Added server-side logging of unhandled request errors to aid future debugging.
+- Fixed comment avatars rendering a broken image when a guest comment had no email, by falling back to a valid default avatar path.
+- Comments from signed-in users now always use their registered name and email instead of editable form fields, so their profile icon renders correctly and their identity can't be spoofed; the Name/Email inputs are hidden for signed-in users and still shown for guests.
+- Updated shared asset cache versions and project documentation for the 3.6.0 release.
+
 ## 3.5.1 - 2026-09-18
 
 - Added moderated PNG, JPG, and GIF TP icon uploads from administrator Settings.

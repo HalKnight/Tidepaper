@@ -38,6 +38,7 @@ var home = require("../controllers/home"),
   flash = require("connect-flash");
 var multer = require("multer");
 var Tools = require("../server/tools.js");
+var Moderation = require("../helpers/moderation");
 var storage = require("node-persist");
 var PropertiesReaderModule = require("properties-reader");
 var PropertiesReader = PropertiesReaderModule.default ||
@@ -97,6 +98,13 @@ var settingsUpload = multer({
     callback(null, ["image/gif", "image/jpeg", "image/png"].indexOf(file.mimetype) !== -1);
   }
 });
+var profileUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024 },
+  fileFilter: function(req, file, callback) {
+    callback(null, ["image/gif", "image/jpeg", "image/png"].indexOf(file.mimetype) !== -1);
+  }
+});
 function uploadMessageAttachment(req, res, next) {
   messageUpload.single("attachment")(req, res, function(err) {
     if (err) {
@@ -137,6 +145,31 @@ function validateSettingsCsrf(req, res, next) {
   }
   next();
 }
+function validateProfileCsrf(req, res, next) {
+  if (!req.body || req.body._csrf !== req.session.csrfToken) {
+    return res.status(403).send("Invalid CSRF token.");
+  }
+  next();
+}
+function uploadProfileAvatar(req, res, next) {
+  profileUpload.single("avatarFile")(req, res, function(err) {
+    if (err) {
+      req.flash("error", err.code === "LIMIT_FILE_SIZE"
+        ? "Profile icons must be 2 MB or smaller."
+        : "Only PNG, JPG, and GIF profile icons are supported.");
+      return res.redirect("/editProfile");
+    }
+    var check = req.file
+      ? Moderation.checkImage(req.file.buffer, undefined, req.file.mimetype)
+      : Promise.resolve();
+    check.then(function() {
+      next();
+    }).catch(function() {
+      req.flash("error", "That profile icon did not pass image safety checks.");
+      return res.redirect("/editProfile");
+    });
+  });
+}
 
 function isEmpty(value) {
   return (
@@ -144,6 +177,17 @@ function isEmpty(value) {
     typeof value == "undefined" ||
     value === null
   );
+}
+
+// passport-local rejects requests with an empty password field before the verify
+// callback runs, so stash the real (possibly blank) value and pad the field it reads.
+function preserveOptionalPassword(req, res, next) {
+  if (!req.body) req.body = {};
+  req.body.newPassword = req.body.password || "";
+  if (!req.body.password) {
+    req.body.password = "unchanged";
+  }
+  next();
 }
   function limitAuthenticationAttempts(req, res, next) {
     var now = Date.now();
@@ -202,6 +246,30 @@ module.exports.initialize = async function(app, passport) {
   app.get("/home/searchbydate", home.date);
   app.get("/admin", isLoggedIn, admin.index);
   app.get("/admin/users/new", isLoggedIn, isAdmin, admin.createUserForm);
+  app.get("/users/avatar/:email", function(req, res) {
+    var email = String(req.params.email || "").trim().toLowerCase();
+    var fallback = function() {
+      return res.redirect("https://www.gravatar.com/avatar/" + md5(email) + "?d=monsterid&s=45");
+    };
+    User.findOne({ "local.email": email }).lean().exec().then(function(user) {
+      if (!user || !user.local || !user.local.avatarData) {
+        return fallback();
+      }
+      var storedData = user.local.avatarData;
+      var data = Buffer.isBuffer(storedData)
+        ? storedData
+        : Buffer.from(storedData.data || storedData.buffer || storedData);
+      if (!data.length) {
+        return fallback();
+      }
+      res.type(["image/png", "image/jpeg", "image/gif"].indexOf(user.local.avatarContentType) !== -1
+        ? user.local.avatarContentType
+        : "image/png");
+      return res.send(data);
+    }).catch(function() {
+      return fallback();
+    });
+  });
   app.get("/users/:user_id", home.userHome);
   app.get("/my-posts", isLoggedIn, function(req, res) {
     var email = req.user && req.user.local && req.user.local.email;
@@ -419,17 +487,38 @@ module.exports.initialize = async function(app, passport) {
 
   app.post(
     "/editProfile",
-    passport.authenticate("local-edit", {
-      successRedirect: "/profile",
-      failureRedirect: "/editProfile",
-      badRequestMessage: "Missing username or password.",
-      failureFlash: true
-    })
+    isLoggedIn,
+    uploadProfileAvatar,
+    validateProfileCsrf,
+    preserveOptionalPassword,
+    function(req, res, next) {
+      passport.authenticate("local-edit", function(err, user, info) {
+        if (err) {
+          console.error("Edit profile authentication failed:", err);
+          req.flash("error", "Profile update failed. Please try again.");
+          return res.redirect("/editProfile");
+        }
+        if (!user) {
+          if (info && info.message) {
+            req.flash("error", info.message);
+          }
+          return res.redirect("/editProfile");
+        }
+        return req.logIn(user, function(loginError) {
+          if (loginError) {
+            console.error("Updated profile login failed:", loginError);
+            return res.redirect("/editProfile");
+          }
+          return res.redirect("/profile");
+        });
+      })(req, res, next);
+    }
   );
 
   app.post(
     "/editProfileAdmin",
     isAdmin,
+    preserveOptionalPassword,
     passport.authenticate("local-edit-admin", {
       successRedirect: "/admin",
       failureRedirect: (await storage.getItem("edituser")) || "/admin",

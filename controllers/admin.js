@@ -69,11 +69,18 @@ module.exports = {
   },
 
   index: function(req, res) {
+    var page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    var pageSize = 25;
+    var skip = (page - 1) * pageSize;
     var viewModel = { user: {}, lama: {} };
     if (req.isAuthenticated() && req.user.local.admin) {
       viewModel = {
         user: {},
-        users: {},
+        users: [],
+        userPage: page,
+        userTotalPages: 1,
+        userPreviousPage: Math.max(page - 1, 1),
+        userNextPage: page + 1,
         stats: {
           stat: true
         },
@@ -81,7 +88,13 @@ module.exports = {
         lama: {}
       };
 
-      User.find({}).lean().exec().then(function(users) {
+      Promise.all([
+        User.find({}, { "local.password": 0 }).sort({ "local.email": 1 }).skip(skip).limit(pageSize).lean().exec(),
+        User.countDocuments({})
+      ]).then(function(results) {
+        var users = results[0] || [];
+        viewModel.userTotalPages = Math.max(Math.ceil(results[1] / pageSize), 1);
+        viewModel.userNextPage = Math.min(page + 1, viewModel.userTotalPages);
         if (req.user.local.admin) {
           viewModel.users = users;
           if (!isEmpty(req.user)) {
@@ -126,11 +139,7 @@ module.exports = {
         return res.redirect("/admin");
       }
 
-      return Article.find({ userID: email }).lean().exec().then(function(articles) {
-        var articleIds = articles.map(function(article) {
-          return article.articleID;
-        });
-
+      return Article.distinct("articleID", { userID: email }).then(function(articleIds) {
         var commentQuery = { email: email };
         if (deleteArticles) {
           commentQuery = {

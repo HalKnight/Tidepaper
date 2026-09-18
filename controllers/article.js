@@ -83,6 +83,14 @@ function saveArticleAttachments(articleID, files) {
   }));
 }
 
+function commentRedirect(req, res, articleID, comment) {
+  var returnTo = String(req.body.returnTo || "");
+  if (returnTo.charAt(0) === "/" && returnTo.indexOf("//") !== 0) {
+    return res.redirect(returnTo);
+  }
+  return res.redirect("/articles/" + articleID + "#" + comment.article_id);
+}
+
 module.exports = {
   index: function(req, res) {
     var viewModel;
@@ -434,6 +442,7 @@ module.exports = {
             );
           }
           var newComment = new Models.Comment(req.body);
+          var isAuthenticated = req.isAuthenticated && req.isAuthenticated() && req.user && req.user.local;
           if (!isEmpty(req.body.name)) {
             newComment.name = filter.clean(req.body.name);
           }
@@ -444,12 +453,17 @@ module.exports = {
           if (!isEmpty(req.body.comment)) {
             newComment.comment = filter.clean(req.body.comment);
           }
+          // Use the signed-in user's real identity so their profile avatar and
+          // comment-delete permissions resolve correctly, instead of trusting a
+          // client-supplied name/email that may not match their account.
+          if (isAuthenticated) {
+            newComment.name = req.user.local.name || newComment.name;
+            newComment.email = req.user.local.email;
+          }
           newComment.gravatar = md5(newComment.email);
           newComment.article_id = article.articleID;
           newComment.save().then(function(comment) {
-            res.redirect(
-              "/articles/" + article.articleID + "#" + comment.article_id
-            );
+            commentRedirect(req, res, article.articleID, comment);
           }).catch(function(err) {
             console.error("Comment save failed:", err);
             return res.redirect("/articles/" + article.articleID);

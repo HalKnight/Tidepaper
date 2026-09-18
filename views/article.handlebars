@@ -56,6 +56,7 @@ SOFTWARE. -->
 		</div>
 		<div class="article-meta">
 			<strong class="likes-count">{{ article.likes }}</strong> likes &middot;
+			<i class="fa fa-comments-o"></i> <strong>{{ comments.length }}</strong> comments &middot;
 			<i class="fa fa-eye"></i> <strong>{{ article.views }}</strong> views &middot;
 			Posted: <em class="text-muted">{{ article.timestamp }}</em>
 		</div>
@@ -83,6 +84,10 @@ SOFTWARE. -->
 				<form method="post"
 					action="/articles/{{ article.articleID }}/comment">
 					<input type="hidden" name="_csrf" value="{{csrfToken}}">
+					{{#if user}}
+					<input type="hidden" name="name" value="{{ user.local.name }}">
+					<input type="hidden" name="email" value="{{ user.local.email }}">
+					{{else}}
 					<div class="form-group col-sm-12">
 						<label class="col-sm-2 control-label" for="name">Name:</label>
 						<div class="col-sm-10">
@@ -95,6 +100,7 @@ SOFTWARE. -->
 							<input class="form-control" type="text" name="email">
 						</div>
 					</div>
+					{{/if}}
 					<div class="form-group col-sm-12">
 						<label class="col-sm-2 control-label" for="comment">Comment:</label>
 						<div class="col-sm-10">
@@ -115,10 +121,10 @@ SOFTWARE. -->
 			{{#each comments}}
 			<li class="media"><a class="pull-left" href="#"> <img
 					class="media-object img-circle"
-					src="http://www.gravatar.com/avatar/{{gravatar}}?d=monsterid&s=45">
+					src="{{avatarUrl email}}">
 			</a>
 				<div class="media-body">
-					{{ comment }} <br /> <strong class="media-heading">{{
+					<i class="fa fa-comment text-muted" aria-hidden="true"></i>&nbsp;{{ comment }} <br /> <strong class="media-heading">{{
 						name }}</strong> <small class="text-muted">{{ timeago timestamp }}</small>
           <button style="float: right;" class="btn btn-danger btn-delete btn-xs delete-comment"
 		  data-id="{{ _id }}">

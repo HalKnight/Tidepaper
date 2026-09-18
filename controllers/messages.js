@@ -33,21 +33,28 @@ function renderMessagePage(req, res, viewModel, page) {
 module.exports = {
   index: function(req, res) {
     var email = currentEmail(req);
+    var page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    var pageSize = 25;
     var viewModel = {
       user: {},
       messages: [],
       unreadCount: 0,
       layout: "user",
       stats: { stat: true },
-      lama: {}
+      lama: {},
+      messagePage: page,
+      messagePageSize: pageSize
     };
 
     return Promise.all([
-      Models.Message.find({ recipientEmail: email, read: false }).sort({ createdAt: -1 }).lean().exec(),
+      Models.Message.find({ recipientEmail: email, read: false }, { senderEmail: 1, senderName: 1, subject: 1, body: 1, attachment: 1, read: 1, createdAt: 1 }).sort({ createdAt: -1 }).skip((page - 1) * pageSize).limit(pageSize).lean().exec(),
       Models.Message.countDocuments({ recipientEmail: email, read: false })
     ]).then(function(results) {
       viewModel.messages = results[0] || [];
       viewModel.unreadCount = results[1] || 0;
+      viewModel.messageTotalPages = Math.max(Math.ceil(results[1] / pageSize), 1);
+      viewModel.messagePreviousPage = Math.max(page - 1, 1);
+      viewModel.messageNextPage = Math.min(page + 1, viewModel.messageTotalPages);
       renderMessages(req, res, viewModel);
     }).catch(function(err) {
       console.error("Message inbox lookup failed:", err);
@@ -57,6 +64,8 @@ module.exports = {
 
   readMessages: function(req, res) {
     var email = currentEmail(req);
+    var page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    var pageSize = 25;
     var viewModel = {
       user: {},
       messages: [],
@@ -64,20 +73,25 @@ module.exports = {
       readMessages: true,
       layout: "user",
       stats: { stat: true },
-      lama: {}
+      lama: {},
+      messagePage: page,
+      messagePageSize: pageSize
     };
 
     return Models.Message.find({
       recipientEmail: email,
       read: true
-    }).sort({ createdAt: -1 }).lean().exec().then(function(messages) {
+    }, { senderEmail: 1, senderName: 1, subject: 1, body: 1, attachment: 1, read: 1, createdAt: 1 }).sort({ createdAt: -1 }).skip((page - 1) * pageSize).limit(pageSize).lean().exec().then(function(messages) {
       viewModel.messages = messages || [];
-      return Models.Message.countDocuments({
-        recipientEmail: email,
-        read: false
-      });
-    }).then(function(unreadCount) {
-      viewModel.unreadCount = unreadCount || 0;
+      return Promise.all([
+        Models.Message.countDocuments({ recipientEmail: email, read: false }),
+        Models.Message.countDocuments({ recipientEmail: email, read: true })
+      ]);
+    }).then(function(counts) {
+      viewModel.unreadCount = counts[0] || 0;
+      viewModel.messageTotalPages = Math.max(Math.ceil((counts[1] || 0) / pageSize), 1);
+      viewModel.messagePreviousPage = Math.max(page - 1, 1);
+      viewModel.messageNextPage = Math.min(page + 1, viewModel.messageTotalPages);
       renderMessages(req, res, viewModel);
     }).catch(function(err) {
       console.error("Read message lookup failed:", err);
@@ -112,8 +126,9 @@ module.exports = {
       lama: {}
     };
 
-    return Models.User.find({ "local.email": { $ne: currentEmail(req) } })
+    return Models.User.find({ "local.email": { $ne: currentEmail(req) } }, { "local.email": 1, "local.name": 1 })
       .sort({ "local.name": 1, "local.email": 1 })
+      .limit(250)
       .lean().exec()
       .then(function(users) {
         viewModel.recipients = users || [];

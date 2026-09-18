@@ -42,7 +42,7 @@ body {
 			<div class="alert alert-danger">{{message}}</div>
 			{{/if}}
 
-			<form action="/editProfile" method="post" data-toggle="validator">
+			<form action="/editProfile" method="post" enctype="multipart/form-data" data-toggle="validator">
 				<input type="hidden" name="_csrf" value="{{csrfToken}}">
 				<div class="form-group">
 					<label>Email</label> <input
@@ -66,6 +66,14 @@ body {
 				<div class="form-group">
 					<label>Facebook Profile URL</label> <input type="url" class="form-control"
 						name="facebookUrl" value="{{user.local.facebookUrl}}" placeholder="https://facebook.com/yourname">
+				</div>
+				<div class="form-group">
+					<label>Profile icon</label>
+					<input type="file" name="avatarFile" class="form-control" accept=".png,.jpg,.jpeg,.gif">
+					<small class="help-block">Optional. PNG, JPG, or GIF. Maximum 2 MB.</small>
+				</div>
+				<div class="form-group">
+					<label><input type="checkbox" name="useDefaultAvatar"> Use the default Gravatar monster icon</label>
 				</div>
 				<input class="displayNone" type="text" id="adminTxt"
 					value="{{user.local.admin}}">
