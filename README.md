@@ -2,18 +2,19 @@
 
 Tidepaper is a server-rendered blog application built with Node.js, Express, MongoDB, Mongoose, Passport, and Handlebars.
 
-Current version: **3.1.1**
+Current version: **3.1.2**
 
 ## Features
 
 - Public home page and article pages
 - User signup, login, logout, and profile editing
+- Per-user X and Facebook profile links with site defaults for guests
 - First registered user is assigned administrator access
 - Article creation, editing, likes, comments, and deletion
 - Private articles visible only to their author and administrators
 - Comment moderation by comment owner, article owner, or administrator
 - Administrator dashboard, user management, and admin-created accounts
-- Site header, social links, theme, and signup settings
+- Site header, default X/Facebook links, theme, and signup settings
 - Popular articles, recent comments, and site statistics
 - Collapsible sidebar with reliable default visibility
 - Improved article readability across dark themes
@@ -106,12 +107,14 @@ Default site settings are stored in [server/properties.file](server/properties.f
 
 - `main.version`: footer/version text
 - `main.lamaTitle`: site header, defaulting to Tidepaper
-- `main.twitter`: Twitter link
+- `main.twitter`: X profile URL
 - `main.facebook`: Facebook link
 - `main.theme`: default Bootswatch theme
 - `admin.settingsID`: identifier for the settings document
 
-Administrators can override the header, social links, theme, and whether new users may register from `/settings`. Available themes are Readable, Slate, Flatly, United, Cyborg, and Solar.
+Administrators can override the header, theme, and whether new users may register from `/settings`. Site-default X and Facebook URLs remain in `server/properties.file`. Available themes are Readable, Slate, Flatly, United, Cyborg, and Solar.
+
+Users can override the default X and Facebook footer links from `/editProfile`. Values must use `http://` or `https://`; blank values restore the site defaults from `server/properties.file`.
 
 ## Application structure
 

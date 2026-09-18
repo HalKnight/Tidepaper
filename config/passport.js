@@ -27,6 +27,11 @@ var passport = require("passport");
 var User = require("../models/user");
 var Article = require("../models/article");
 
+function socialUrl(value) {
+  var url = String(value || "").trim();
+  return /^https?:\/\//i.test(url) ? url : "";
+}
+
 module.exports = function(passport) {
   // =========================================================================
   // passport session setup ==================================================
@@ -122,6 +127,8 @@ module.exports = function(passport) {
           var newName = req.body.name || user.local.name;
           user.local.email = email;
           user.local.name = newName;
+          user.local.xUrl = socialUrl(req.body.xUrl);
+          user.local.facebookUrl = socialUrl(req.body.facebookUrl);
           if (password && password !== "") {
             user.local.password = user.generateHash(password);
           }

@@ -87,16 +87,12 @@ module.exports = {
       if (req.body.newUsers == "on") {
         curSet = {
           header: req.body.header,
-          twitter: req.body.twitter,
-          facebook: req.body.facebook,
           newUsers: true,
           theme: req.body.theme
         };
       } else {
         curSet = {
           header: req.body.header,
-          twitter: req.body.twitter,
-          facebook: req.body.facebook,
           newUsers: false,
           theme: req.body.theme
         };

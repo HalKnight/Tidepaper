@@ -20,9 +20,9 @@
 #SOFTWARE.
 
 [main]
-version = Powered by Tidepaper version 3.1.1
+version = Powered by Tidepaper version 3.1.2
 lamaTitle = Tidepaper
-twitter = https://www.twitter.com/
+twitter = https://x.com/
 facebook = https://www.facebook.com/
 theme = readable
 [admin]

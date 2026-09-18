@@ -2,6 +2,14 @@
 
 All notable changes made during the Tidepaper stabilization pass are recorded here.
 
+## 3.1.2 - 2026-09-18
+
+- Added per-user X and Facebook profile URL overrides in Edit Profile.
+- Kept guest/default social links in `server/properties.file` and removed them from administrator Settings.
+- Replaced the footer Twitter icon with the X logo and changed the default X URL to `https://x.com/`.
+- Added HTTP(S) validation and safe escaping for personal social profile links.
+- Updated the application release version and documentation to 3.1.2.
+
 ## 3.1.1 - 2026-09-18
 
 - Fixed the public and authenticated sidebar behavior so it is visible by default and can be collapsed with the menu button.

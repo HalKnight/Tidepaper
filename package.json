@@ -1,6 +1,6 @@
 {
   "name": "tidepaper",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "description": "A Blog powered by Node.js",
   "repository": {
     "type": "git",

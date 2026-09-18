@@ -59,6 +59,14 @@ body {
 					<label>Author Name</label> <input type="text" class="form-control"
 						name="name" value="{{user.local.name}}">
 				</div>
+				<div class="form-group">
+					<label>X Profile URL</label> <input type="url" class="form-control"
+						name="xUrl" value="{{user.local.xUrl}}" placeholder="https://x.com/yourname">
+				</div>
+				<div class="form-group">
+					<label>Facebook Profile URL</label> <input type="url" class="form-control"
+						name="facebookUrl" value="{{user.local.facebookUrl}}" placeholder="https://facebook.com/yourname">
+				</div>
 				<input class="displayNone" type="text" id="adminTxt"
 					value="{{user.local.admin}}">
 				<button type="submit" class="btn btn-warning btn-lg">Update</button>

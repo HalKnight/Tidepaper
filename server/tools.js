@@ -60,6 +60,10 @@ module.exports = {
     viewModel.lama.version = lamaVersion;
     viewModel.lama.twitter = lamaTwitter;
     viewModel.lama.facebook = lamaFacebook;
+    if (viewModel.user && viewModel.user.local) {
+      viewModel.lama.twitter = viewModel.user.local.xUrl || lamaTwitter;
+      viewModel.lama.facebook = viewModel.user.local.facebookUrl || lamaFacebook;
+    }
     viewModel.styleSheet = css;
     viewModel.theme = lamaTheme;
 
@@ -72,8 +76,10 @@ module.exports = {
           viewModel.lama.header = savedHeader.toLowerCase() === "lama"
             ? lamaHeader
             : settings.header || lamaHeader;
-          viewModel.lama.twitter = settings.twitter;
-          viewModel.lama.facebook = settings.facebook;
+          if (viewModel.user && viewModel.user.local) {
+            viewModel.lama.twitter = viewModel.user.local.xUrl || lamaTwitter;
+            viewModel.lama.facebook = viewModel.user.local.facebookUrl || lamaFacebook;
+          }
           viewModel.theme = settings.theme || lamaTheme;
 
           css = [
