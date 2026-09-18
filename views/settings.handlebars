@@ -42,7 +42,7 @@ body {
 			<div class="alert alert-danger">{{message}}</div>
 			{{/if}}
 
-			<form action="/settings" method="post">
+			<form action="/settings" method="post" enctype="multipart/form-data">
 				<input type="hidden" name="_csrf" value="{{csrfToken}}">
 
 				<hr>
@@ -59,6 +59,17 @@ body {
 					<label>Tidepaper icon image URL</label> <input type="text" class="form-control"
 						name="tidepaperIconUrl" value="{{settings.tidepaperIconUrl}}" placeholder="/public/upload/tidepaper-icon.png">
 					<small class="help-block">Leave blank to use the default TP icon.</small>
+				</div>
+				<div class="form-group">
+					<label>Upload Tidepaper icon</label>
+					<input type="file" name="tidepaperIconFile" class="form-control" accept=".png,.jpg,.jpeg,.gif">
+					<small class="help-block">Optional. PNG, JPG, or GIF. Maximum 2 MB. The image is moderated before saving.</small>
+				</div>
+				<div class="form-group">
+					<label>
+						<input type="checkbox" name="useDefaultTidepaperIcon">
+						 Use the default TP icon
+					</label>
 				</div>
 				<div class="form-group">
 					<label>Allow New Users</label> <input style="width: 10%;"

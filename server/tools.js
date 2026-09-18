@@ -111,7 +111,9 @@ module.exports = {
           viewModel.theme = settings.theme || lamaTheme;
           viewModel.tidepaperUrl = normalizeTidepaperUrl(settings.tidepaperUrl);
           viewModel.lama.tidepaperUrl = viewModel.tidepaperUrl;
-          viewModel.lama.tidepaperIconUrl = String(settings.tidepaperIconUrl || "").trim();
+          viewModel.lama.tidepaperIconUrl = settings.tidepaperIconData
+            ? "/tidepaper-icon"
+            : String(settings.tidepaperIconUrl || "").trim();
 
           css = [
             {

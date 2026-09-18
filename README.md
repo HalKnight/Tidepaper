@@ -2,7 +2,7 @@
 
 Tidepaper is a server-rendered blog application built with Node.js, Express, MongoDB, Mongoose, Passport, and Handlebars.
 
-Current version: **3.5.0**
+Current version: **3.5.1**
 
 ## Features
 
@@ -16,6 +16,7 @@ Current version: **3.5.0**
 - Local NSFWJS image moderation by default, with cloud provider choices in Settings
 - Configurable Tidepaper TP icon image and destination from administrator Settings
 - Public upload paths such as `/public/upload/tidepaper-icon.png` for the TP image
+- Moderated TP icon uploads with a Use the default TP icon reset option
 - Separate unread Inbox and Read messages views
 - Message deletion and explicit Mark as read actions
 - Unread message count alerts in the authenticated navigation

@@ -2,6 +2,13 @@
 
 All notable changes made during the Tidepaper stabilization pass are recorded here.
 
+## 3.5.1 - 2026-09-18
+
+- Added moderated PNG, JPG, and GIF TP icon uploads from administrator Settings.
+- Added a Use the default TP icon option that clears custom uploaded icon data and URLs.
+- Fixed TP icon image URL persistence and duplicate settings-field handling.
+- Updated shared asset cache versions and project documentation for the 3.5.1 release.
+
 ## 3.5.0 - 2026-09-18
 
 - Added configurable Tidepaper TP icon image URL and click destination in administrator Settings.

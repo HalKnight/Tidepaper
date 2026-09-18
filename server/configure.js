@@ -159,7 +159,8 @@ module.exports = function(app) {
     var isMessageUpload = req.method === "POST" && req.path === "/messages";
     var isArticleCreate = req.method === "POST" && req.path === "/articles";
     var isArticleUpload = req.method === "POST" && /\/articles\/[^/]+\/attachments$/.test(req.path);
-    if (isMultipartUpload && (isMessageUpload || isArticleCreate || isArticleUpload)) {
+    var isSettingsUpload = req.method === "POST" && req.path === "/settings";
+    if (isMultipartUpload && (isMessageUpload || isArticleCreate || isArticleUpload || isSettingsUpload)) {
       return next();
     }
 

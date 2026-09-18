@@ -19,6 +19,7 @@ SOFTWARE.
 */
 var Settings = require("../models/settings");
 var Tools = require("../server/tools.js");
+var Moderation = require("../helpers/moderation");
 var PropertiesReaderModule = require("properties-reader");
 var PropertiesReader = PropertiesReaderModule.default ||
   PropertiesReaderModule.propertiesReader ||
@@ -58,6 +59,24 @@ function normalizeTidepaperIconUrl(value) {
 }
 
 module.exports = {
+  icon: function(req, res) {
+    return Settings.findOne({ settings_id: settingsID })
+      .select("tidepaperIconData tidepaperIconContentType")
+      .lean().exec().then(function(settings) {
+        if (!settings || !settings.tidepaperIconData) {
+          return res.status(404).send("Tidepaper icon not found.");
+        }
+        var data = Buffer.isBuffer(settings.tidepaperIconData)
+          ? settings.tidepaperIconData
+          : Buffer.from(settings.tidepaperIconData.data || settings.tidepaperIconData.buffer || settings.tidepaperIconData);
+        res.type(settings.tidepaperIconContentType || "image/png");
+        return res.send(data);
+      }).catch(function(err) {
+        console.error("Tidepaper icon lookup failed:", err);
+        return res.status(404).send("Tidepaper icon not found.");
+      });
+  },
+
   index: function(req, res) {
     var viewModel;
     if (req.isAuthenticated() && req.user.local.admin) {
@@ -122,6 +141,32 @@ module.exports = {
         };
       }
 
+      if (req.body.useDefaultTidepaperIcon === "on") {
+        curSet.tidepaperIconUrl = "";
+        curSet.tidepaperIconData = null;
+        curSet.tidepaperIconContentType = null;
+      }
+
+      if (req.file && req.body.useDefaultTidepaperIcon !== "on") {
+        curSet.tidepaperIconData = req.file.buffer;
+        curSet.tidepaperIconContentType = req.file.mimetype;
+        curSet.tidepaperIconUrl = "";
+      }
+
+      var saveSettings = function() {
+        return Settings.updateOne(
+          { settings_id: settingsID },
+          { $set: curSet, $setOnInsert: { settings_id: settingsID } },
+          { upsert: true, setDefaultsOnInsert: true }
+        ).then(function() {
+          Tools.getSettings(viewModel, res, "settings", true);
+        });
+      };
+
+      var moderationCheck = req.file
+        ? Moderation.checkImage(req.file.buffer, undefined, req.file.mimetype)
+        : Promise.resolve();
+
       if (!isEmpty(req.user)) {
         Tools.loadCurrentUser(req, function(err, user) {
           if (err) {
@@ -129,21 +174,7 @@ module.exports = {
             return res.redirect("/");
           }
           viewModel.user = user;
-          Settings.updateOne(
-            {
-              settings_id: settingsID
-            },
-            {
-              $set: curSet,
-              $setOnInsert: { settings_id: settingsID }
-            },
-            {
-              upsert: true,
-              setDefaultsOnInsert: true
-            },
-            ).then(function(lamaSettings) {
-              Tools.getSettings(viewModel, res, "settings", true);
-            }).catch(function(err) {
+          moderationCheck.then(saveSettings).catch(function(err) {
               console.error("Settings update failed:", err);
               return res.redirect("/");
             });
@@ -151,24 +182,10 @@ module.exports = {
         });
         return;
       }
-      Settings.updateOne(
-        {
-          settings_id: settingsID
-        },
-        {
-          $set: curSet,
-          $setOnInsert: { settings_id: settingsID }
-        },
-        {
-          upsert: true,
-          setDefaultsOnInsert: true
-        },
-        ).then(function(lamaSettings) {
-          Tools.getSettings(viewModel, res, "settings", true);
-        }).catch(function(err) {
+      moderationCheck.then(saveSettings).catch(function(err) {
           console.error("Settings update failed:", err);
           return res.redirect("/");
-        });
+      });
     } else {
       res.redirect("/");
     }

@@ -40,6 +40,8 @@ var SettingsSchema = new Schema({
 		type : String,
 		default: ""
 	},
+	tidepaperIconData : Buffer,
+	tidepaperIconContentType : String,
 	twitter : {
 		type : String
 	},

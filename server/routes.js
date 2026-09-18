@@ -90,6 +90,13 @@ var articleUpload = multer({
     callback(null, allowedTypes.indexOf(file.mimetype) !== -1);
   }
 });
+var settingsUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024 },
+  fileFilter: function(req, file, callback) {
+    callback(null, ["image/gif", "image/jpeg", "image/png"].indexOf(file.mimetype) !== -1);
+  }
+});
 function uploadMessageAttachment(req, res, next) {
   messageUpload.single("attachment")(req, res, function(err) {
     if (err) {
@@ -108,6 +115,23 @@ function validateMessageCsrf(req, res, next) {
   next();
 }
 function validateArticleCsrf(req, res, next) {
+  if (!req.body || req.body._csrf !== req.session.csrfToken) {
+    return res.status(403).send("Invalid CSRF token.");
+  }
+  next();
+}
+function uploadSettingsIcon(req, res, next) {
+  settingsUpload.single("tidepaperIconFile")(req, res, function(err) {
+    if (err) {
+      req.flash("error", err.code === "LIMIT_FILE_SIZE"
+        ? "The icon must be 2 MB or smaller."
+        : "Only PNG, JPG, and GIF icons are supported.");
+      return res.redirect("/settings");
+    }
+    next();
+  });
+}
+function validateSettingsCsrf(req, res, next) {
   if (!req.body || req.body._csrf !== req.session.csrfToken) {
     return res.status(403).send("Invalid CSRF token.");
   }
@@ -172,6 +196,7 @@ module.exports.initialize = async function(app, passport) {
         return res.redirect("/home");
       });
   });
+  app.get("/tidepaper-icon", settings.icon);
   app.get("/home", home.index);
   app.get("/home/:article_id/searchbyauthor", home.author);
   app.get("/home/searchbydate", home.date);
@@ -364,7 +389,7 @@ module.exports.initialize = async function(app, passport) {
     }
   });
 
-  app.post("/settings", isLoggedIn, isAdmin, settings.edit);
+  app.post("/settings", isLoggedIn, isAdmin, uploadSettingsIcon, validateSettingsCsrf, settings.edit);
   app.post("/messages", isLoggedIn, uploadMessageAttachment, validateMessageCsrf, messages.send);
   app.post("/messages/:message_id/read", isLoggedIn, messages.markRead);
   app.post("/messages/:message_id/delete", isLoggedIn, messages.remove);
