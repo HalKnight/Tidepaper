@@ -25,9 +25,11 @@ var fs = require("fs"),
   path = require("path"),
   sidebar = require("../helpers/sidebar"),
   Models = require("../models"),
+  ArticleAttachmentModel = require("../models").ArticleAttachment,
   UserModel = require("../models/user"),
   md5 = require("MD5");
 var Tools = require("../server/tools.js");
+var Moderation = require("../helpers/moderation");
 var PropertiesReaderModule = require("properties-reader");
 var PropertiesReader = PropertiesReaderModule.default ||
   PropertiesReaderModule.propertiesReader ||
@@ -61,6 +63,24 @@ function canViewPrivateArticle(req, article) {
       req.user.local &&
       (req.user.local.admin || req.user.local.email === article.userID))
   );
+}
+
+function saveArticleAttachments(articleID, files) {
+  return Promise.all((files || []).map(function(file) {
+    var imageCheck = file.mimetype.indexOf("image/") === 0
+      ? Moderation.checkImage(file.buffer, undefined, file.mimetype)
+      : Promise.resolve();
+    return imageCheck.then(function() {
+      return new ArticleAttachmentModel({
+        articleID: articleID,
+        filename: file.originalname,
+        contentType: file.mimetype,
+        size: file.size,
+        data: file.buffer,
+        inline: file.mimetype.indexOf("image/") === 0
+      }).save();
+    });
+  }));
 }
 
 module.exports = {
@@ -120,7 +140,9 @@ module.exports = {
                 "/" +
                 article.timestamp.getFullYear();
 
-              Models.Comment.find(
+              ArticleAttachmentModel.find({ articleID: article.articleID }).lean().exec().then(function(attachments) {
+                viewModel.article.attachments = attachments || [];
+                return Models.Comment.find(
                 {
                   article_id: article.articleID
                 },
@@ -130,7 +152,8 @@ module.exports = {
                     timestamp: 1
                   }
                 },
-                ).lean().exec().then(function(comments) {
+                ).lean().exec();
+              }).then(function(comments) {
                   viewModel.comments = comments;
                   sidebar(viewModel, function(viewModel) {
                     if (
@@ -183,7 +206,9 @@ module.exports = {
             "/" +
             article.timestamp.getFullYear();
 
-          Models.Comment.find(
+          ArticleAttachmentModel.find({ articleID: article.articleID }).lean().exec().then(function(attachments) {
+            viewModel.article.attachments = attachments || [];
+            return Models.Comment.find(
             {
               article_id: article.articleID
             },
@@ -193,7 +218,8 @@ module.exports = {
                 timestamp: 1
               }
             },
-            ).lean().exec().then(function(comments) {
+            ).lean().exec();
+          }).then(function(comments) {
               viewModel.comments = comments;
               //viewModel.user = JSON.stringify(req.user);
               sidebar(viewModel, function(viewModel) {
@@ -231,7 +257,8 @@ module.exports = {
         articleQuery.userID = req.user.local.email;
       }
 
-      var isPrivate = req.body.private === "true" || req.body.private === "on";
+      var privateValue = String(req.body.private || "").trim().toLowerCase();
+      var isPrivate = privateValue === "true" || privateValue === "on" || privateValue === "1";
 
       Models.Article.findOneAndUpdate(
         articleQuery,
@@ -245,7 +272,9 @@ module.exports = {
         }
       ).then(function(exArticle) {
           if (exArticle) {
-            return res.redirect("/articles/" + exArticle.articleID);
+            return saveArticleAttachments(exArticle.articleID, req.files).then(function() {
+              return res.redirect("/articles/" + exArticle.articleID);
+            });
           }
           return Models.Article.find({ articleID: postUrl }).exec().then(function(articles) {
             if (articles.length > 0) {
@@ -265,7 +294,9 @@ module.exports = {
               userName: req.user.local.name
             });
             return newPost.save().then(function(article) {
-              res.redirect("/articles/" + article.articleID);
+              return saveArticleAttachments(article.articleID, req.files).then(function() {
+                res.redirect("/articles/" + article.articleID);
+              });
             });
           });
         }).catch(function(err) {
@@ -276,6 +307,98 @@ module.exports = {
 
     savePost();
   },
+  uploadAttachment: function(req, res) {
+    var articleQuery = {
+      articleID: req.params.article_id
+    };
+    if (!req.user.local.admin) {
+      articleQuery.userID = req.user.local.email;
+    }
+
+    return Models.Article.findOne(articleQuery).lean().exec().then(function(article) {
+      if (!article) {
+        return res.status(404).send("Article not found.");
+      }
+
+      var files = req.files || [];
+      return Promise.all(files.map(function(file) {
+        return new ArticleAttachmentModel({
+          articleID: article.articleID,
+          filename: file.originalname,
+          contentType: file.mimetype,
+          size: file.size,
+          data: file.buffer,
+          inline: file.mimetype.indexOf("image/") === 0
+        }).save();
+      })).then(function() {
+        return res.redirect("/articles/" + article.articleID);
+      });
+    }).catch(function(err) {
+      console.error("Article attachment upload failed:", err);
+      return res.redirect("/articles/" + req.params.article_id);
+    });
+  },
+
+  attachment: function(req, res) {
+    return Models.ArticleAttachment.findOne({
+      _id: req.params.attachment_id
+    }).lean().exec().then(function(attachment) {
+      if (!attachment) {
+        return res.status(404).send("Attachment not found.");
+      }
+
+      return Models.Article.findOne({ articleID: attachment.articleID }).lean().exec().then(function(article) {
+        var canAccess = article && (!article.private ||
+          (req.user && req.user.local &&
+            (req.user.local.admin || req.user.local.email === article.userID)));
+        if (!canAccess) {
+          return res.status(403).send("Attachment access denied.");
+        }
+
+        var filename = String(attachment.filename || "attachment")
+          .replace(/[\\"\r\n]/g, "_");
+        var data = Buffer.isBuffer(attachment.data)
+          ? attachment.data
+          : Buffer.from(attachment.data.data || attachment.data.buffer || attachment.data);
+        res.type(attachment.contentType || "application/octet-stream");
+        res.set("Content-Disposition", attachment.inline
+          ? "inline; filename=\"" + filename + "\""
+          : "attachment; filename=\"" + filename + "\"");
+        return res.send(data);
+      });
+    }).catch(function(err) {
+      console.error("Article attachment lookup failed:", err);
+      return res.status(404).send("Attachment not found.");
+    });
+  },
+
+  removeAttachment: function(req, res) {
+    var articleQuery = {
+      articleID: req.params.article_id
+    };
+    if (!req.user.local.admin) {
+      articleQuery.userID = req.user.local.email;
+    }
+
+    return Models.Article.findOne(articleQuery).lean().exec().then(function(article) {
+      if (!article) {
+        return res.status(404).send("Article not found.");
+      }
+      return ArticleAttachmentModel.deleteOne({
+        _id: req.params.attachment_id,
+        articleID: article.articleID
+      }).exec().then(function(result) {
+        if (!result || result.deletedCount !== 1) {
+          return res.status(404).send("Attachment not found.");
+        }
+        return res.redirect("/articles/" + article.articleID);
+      });
+    }).catch(function(err) {
+      console.error("Article attachment deletion failed:", err);
+      return res.status(500).send("Attachment could not be deleted.");
+    });
+  },
+
   like: function(req, res) {
     Models.Article.findOne(
       {
@@ -355,6 +478,8 @@ module.exports = {
               article_id: article.articleID
             }
             ).then(function() {
+              return ArticleAttachmentModel.deleteMany({ articleID: article.articleID });
+            }).then(function() {
               return article.deleteOne();
             }).then(function() {
               res.json(true);

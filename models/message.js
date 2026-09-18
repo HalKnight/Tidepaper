@@ -28,6 +28,12 @@ var MessageSchema = new mongoose.Schema({
     required: true,
     maxlength: 10000
   },
+  attachment: {
+    filename: String,
+    contentType: String,
+    size: Number,
+    data: Buffer
+  },
   read: {
     type: Boolean,
     default: false

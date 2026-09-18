@@ -41,6 +41,10 @@ var SettingsSchema = new Schema({
 	theme : {
 		type : String
 	},
+	moderationProvider : {
+		type : String,
+		default: "local"
+	},
 	newUsers : Boolean
 });
 

@@ -2,7 +2,7 @@
 
 Tidepaper is a server-rendered blog application built with Node.js, Express, MongoDB, Mongoose, Passport, and Handlebars.
 
-Current version: **3.3.0**
+Current version: **3.4.0**
 
 ## Features
 
@@ -10,6 +10,9 @@ Current version: **3.3.0**
 - User signup, login, logout, and profile editing
 - Direct messages between registered users with an authenticated inbox
 - Recipient search by name or email when composing messages
+- Optional message attachments up to 5 MB for common document, image, and text formats
+- Article images and downloadable files, with inline image rendering
+- Local NSFWJS image moderation by default, with cloud provider choices in Settings
 - Separate unread Inbox and Read messages views
 - Message deletion and explicit Mark as read actions
 - Unread message count alerts in the authenticated navigation
@@ -74,6 +77,11 @@ If port `8080` is already occupied, either stop the process using it or select a
 | `SESSION_SECRET` | `server/configure.js` | Session signing secret. Required in production. |
 | `COOKIE_SECRET` | `server/configure.js` | Cookie signing secret. Falls back to `SESSION_SECRET`; required in production. |
 | `MONGODB_URI` | `lama.js` | MongoDB connection URI. Overrides the local properties file. |
+| `AWS_REGION` | image moderation | AWS Rekognition region when AWS moderation is selected. |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | image moderation | AWS credentials for Rekognition moderation. |
+| `GOOGLE_APPLICATION_CREDENTIALS` | image moderation | Google service-account JSON path for Vision SafeSearch. |
+| `AZURE_CONTENT_SAFETY_ENDPOINT` | image moderation | Azure Content Safety endpoint. |
+| `AZURE_CONTENT_SAFETY_KEY` | image moderation | Azure Content Safety subscription key. |
 
 In production, set secrets before starting the server:
 
@@ -122,6 +130,8 @@ Default site settings are stored in [server/properties.file](server/properties.f
 
 Administrators can override the header, theme, and whether new users may register from `/settings`. Site-default X and Facebook URLs remain in `server/properties.file`. Available themes are Readable, Slate, Flatly, United, Cyborg, and Solar.
 
+Image moderation defaults to local NSFWJS using the portable JavaScript TensorFlow backend and does not require an API fee. Settings also exposes AWS Rekognition, Google Cloud Vision SafeSearch, and Azure AI Content Safety choices. Configure the matching environment variables before selecting a cloud mode. Non-image article/message files are restricted by type and size but are not content-moderated.
+
 Users can override the default X and Facebook footer links from `/editProfile`. Values must use `http://` or `https://`; blank values restore the site defaults from `server/properties.file`.
 
 ## Application structure
@@ -166,6 +176,7 @@ Users can override the default X and Facebook footer links from `/editProfile`. 
 - `POST /messages/:message_id/delete` deletes an owned message.
 - `GET /messages/compose` displays the new-message form.
 - `POST /messages` sends a message to another registered user.
+- `GET /messages/:message_id/attachment` downloads an attachment from an owned message.
 - `GET /messages/:message_id` displays and marks an owned message as read.
 - `GET /newArticle` displays the article editor.
 - `GET /newArticle/:article_id` edits an existing article.

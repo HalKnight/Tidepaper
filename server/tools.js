@@ -119,6 +119,7 @@ module.exports = {
             newSettings.twitter = lamaTwitter;
             newSettings.facebook = lamaFacebook;
             newSettings.theme = lamaTheme;
+            newSettings.moderationProvider = "local";
             newSettings.newUsers = true;
             viewModel.settings = newSettings;
           }

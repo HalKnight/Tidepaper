@@ -21,6 +21,7 @@ SOFTWARE.
 */
 var sidebar = require("../helpers/sidebar"),
   ArticleModel = require("../models").Article,
+  ArticleAttachmentModel = require("../models").ArticleAttachment,
   UserModel = require("../models/user");
 var Tools = require("../server/tools.js");
 var scripts = [
@@ -122,7 +123,12 @@ module.exports = {
           return res.redirect("/");
         }
 
-        viewModel.article = article;
+        return ArticleAttachmentModel.find({ articleID: article.articleID })
+          .lean().exec().then(function(attachments) {
+            article.attachments = attachments || [];
+            viewModel.article = article;
+          });
+      }).then(function() {
         sidebar(viewModel, function(viewModel) {
           if (req.isAuthenticated()) {
             Tools.getSettings(viewModel, res, "newArticle");

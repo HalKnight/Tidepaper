@@ -2,6 +2,15 @@
 
 All notable changes made during the Tidepaper stabilization pass are recorded here.
 
+## 3.4.0 - 2026-09-18
+
+- Added article image and file attachments with inline image rendering and protected downloads.
+- Added portable Local NSFWJS image moderation as the default upload safety check without requiring native TensorFlow bindings.
+- Added AWS Rekognition, Google SafeSearch, and Azure Content Safety moderation modes.
+- Added moderation provider settings and documented the required cloud credentials.
+- Updated shared asset cache versions and project documentation for the 3.4.0 release.
+- Added optional message attachments up to 5 MB with authenticated downloads.
+
 ## 3.3.0 - 2026-09-18
 
 - Added authenticated direct messaging with inbox, compose, read-message, delete, and mark-as-read workflows.

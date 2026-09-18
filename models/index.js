@@ -23,6 +23,7 @@ SOFTWARE.
 */
 module.exports = {
 	'Image' : require('./image'),
+	'ArticleAttachment' : require('./articleAttachment'),
 	'Comment' : require('./comment'),
 	'Message' : require('./message'),
 	'Article' : require('./article'),

@@ -24,6 +24,7 @@ SOFTWARE.
 var sidebar = require("../helpers/sidebar"),
   ArticleModel = require("../models").Article,
   CommentModel = require("../models").Comment,
+  ArticleAttachmentModel = require("../models").ArticleAttachment,
   UserModel = require("../models/user"),
   Tools = require("../server/tools.js"),
   SettingsModel = require("../models/settings"),
@@ -76,6 +77,35 @@ function attachArticleComments(articles) {
   });
 }
 
+function attachArticleAttachments(articles) {
+  if (!ArticleAttachmentModel || !articles.length) {
+    return Promise.resolve(articles);
+  }
+
+  var articleIds = articles.map(function(article) {
+    return article.articleID;
+  });
+
+  return ArticleAttachmentModel.find({
+    articleID: {
+      $in: articleIds
+    }
+  }).lean().exec().then(function(attachments) {
+    var attachmentsByArticle = {};
+    (attachments || []).forEach(function(attachment) {
+      if (!attachmentsByArticle[attachment.articleID]) {
+        attachmentsByArticle[attachment.articleID] = [];
+      }
+      attachmentsByArticle[attachment.articleID].push(attachment);
+    });
+
+    articles.forEach(function(article) {
+      article.attachments = attachmentsByArticle[article.articleID] || [];
+    });
+    return articles;
+  });
+}
+
 module.exports = {
   index: function(req, res) {
     var viewModel;
@@ -94,8 +124,9 @@ module.exports = {
     }
 
     var articleQuery = {
-      $or: [
-        { private: { $ne: true } }
+      $nor: [
+        { private: true },
+        { private: "true" }
       ]
     };
     return ArticleModel.find(
@@ -155,7 +186,7 @@ module.exports = {
           });
 
           return articles;
-        }).then(attachArticleComments);
+        }).then(attachArticleComments).then(attachArticleAttachments);
       }).then(function(articles) {
         var finishHome = function() {
           viewModel.articles = articles;
@@ -246,7 +277,7 @@ module.exports = {
         }
       });
 
-      return attachArticleComments(articles);
+      return attachArticleComments(articles).then(attachArticleAttachments);
     }).then(function(articles) {
 
       var finishUserHome = function() {
@@ -304,7 +335,7 @@ module.exports = {
           timestamp: -1
         }
       }
-    ).lean().exec().then(attachArticleComments).then(function(articles) {
+    ).lean().exec().then(attachArticleComments).then(attachArticleAttachments).then(function(articles) {
         if (!articles) {
           articles = [];
         }
@@ -366,7 +397,7 @@ module.exports = {
       },
       {},
       { sort: { timestamp: -1 } },
-    ).lean().exec().then(attachArticleComments).then(function(articles) {
+    ).lean().exec().then(attachArticleComments).then(attachArticleAttachments).then(function(articles) {
         articles = articles || [];
         articles.forEach(function(article) {
           if (article && article.timestamp) {

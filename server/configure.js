@@ -155,6 +155,14 @@ module.exports = function(app) {
       return next();
     }
 
+    var isMultipartUpload = String(req.get("content-type") || "").indexOf("multipart/form-data") === 0;
+    var isMessageUpload = req.method === "POST" && req.path === "/messages";
+    var isArticleCreate = req.method === "POST" && req.path === "/articles";
+    var isArticleUpload = req.method === "POST" && /\/articles\/[^/]+\/attachments$/.test(req.path);
+    if (isMultipartUpload && (isMessageUpload || isArticleCreate || isArticleUpload)) {
+      return next();
+    }
+
     var submittedToken = req.body && req.body._csrf || req.get("x-csrf-token");
     var expectedToken = req.session && req.session.csrfToken;
     if (!submittedToken || !expectedToken || submittedToken !== expectedToken) {

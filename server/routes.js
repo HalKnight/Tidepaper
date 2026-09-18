@@ -36,6 +36,7 @@ var home = require("../controllers/home"),
   md5 = require("MD5"),
   UserModel = require("../models/user"),
   flash = require("connect-flash");
+var multer = require("multer");
 var Tools = require("../server/tools.js");
 var storage = require("node-persist");
 var PropertiesReaderModule = require("properties-reader");
@@ -52,6 +53,66 @@ var authenticationAttempts = new Map();
 var authenticationWindowMs = 15 * 60 * 1000;
 var authenticationLimit = 10;
 var lastAuthenticationCleanup = 0;
+var messageUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024
+  },
+  fileFilter: function(req, file, callback) {
+    var allowedTypes = [
+      "application/pdf",
+      "text/plain",
+      "image/gif",
+      "image/jpeg",
+      "image/png",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ];
+    callback(null, allowedTypes.indexOf(file.mimetype) !== -1);
+  }
+});
+var articleUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+    files: 5
+  },
+  fileFilter: function(req, file, callback) {
+    var allowedTypes = [
+      "application/pdf",
+      "text/plain",
+      "image/gif",
+      "image/jpeg",
+      "image/png",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ];
+    callback(null, allowedTypes.indexOf(file.mimetype) !== -1);
+  }
+});
+function uploadMessageAttachment(req, res, next) {
+  messageUpload.single("attachment")(req, res, function(err) {
+    if (err) {
+      req.flash("error", err.code === "LIMIT_FILE_SIZE"
+        ? "Attachments must be 5 MB or smaller."
+        : "That attachment type is not supported.");
+      return res.redirect("/messages/compose");
+    }
+    next();
+  });
+}
+function validateMessageCsrf(req, res, next) {
+  if (!req.body || req.body._csrf !== req.session.csrfToken) {
+    return res.status(403).send("Invalid CSRF token.");
+  }
+  next();
+}
+function validateArticleCsrf(req, res, next) {
+  if (!req.body || req.body._csrf !== req.session.csrfToken) {
+    return res.status(403).send("Invalid CSRF token.");
+  }
+  next();
+}
 
 function isEmpty(value) {
   return (
@@ -103,12 +164,22 @@ module.exports.initialize = async function(app, passport) {
   app.get("/admin", isLoggedIn, admin.index);
   app.get("/admin/users/new", isLoggedIn, isAdmin, admin.createUserForm);
   app.get("/users/:user_id", home.userHome);
+  app.get("/my-posts", isLoggedIn, function(req, res) {
+    var email = req.user && req.user.local && req.user.local.email;
+    if (!email) {
+      return res.redirect("/profile");
+    }
+    return res.redirect("/users/" + encodeURIComponent(email));
+  });
   app.post("/admin/users/delete", isLoggedIn, isAdmin, admin.removeUser);
   app.get("/settings", isLoggedIn, isAdmin, settings.index);
   app.get("/newArticle", isLoggedIn, newArticle.index);
   app.get("/newArticle/:article_id", isLoggedIn, newArticle.edit);
   app.get("/articles/:article_id", article.index);
-  app.post("/articles", isLoggedIn, article.create);
+  app.get("/articles/:article_id/attachments/:attachment_id", article.attachment);
+  app.post("/articles/:article_id/attachments/:attachment_id/delete", isLoggedIn, validateArticleCsrf, article.removeAttachment);
+  app.post("/articles", isLoggedIn, articleUpload.array("attachments", 5), validateArticleCsrf, article.create);
+  app.post("/articles/:article_id/attachments", isLoggedIn, articleUpload.array("attachments", 5), validateArticleCsrf, article.uploadAttachment);
   app.post("/articles/:article_id/like", article.like);
   app.post("/articles/:article_id/comment", article.comment);
   app.delete("/articles/:article_id", isLoggedIn, article.remove);
@@ -202,6 +273,7 @@ module.exports.initialize = async function(app, passport) {
   app.get("/messages", isLoggedIn, messages.index);
   app.get("/messages/compose", isLoggedIn, messages.compose);
   app.get("/messages/read", isLoggedIn, messages.readMessages);
+  app.get("/messages/:message_id/attachment", isLoggedIn, messages.attachment);
   app.get("/messages/:message_id", isLoggedIn, messages.read);
   app.post("/logout", function(req, res) {
     if (req.logout) {
@@ -279,7 +351,7 @@ module.exports.initialize = async function(app, passport) {
   });
 
   app.post("/settings", isLoggedIn, isAdmin, settings.edit);
-  app.post("/messages", isLoggedIn, messages.send);
+  app.post("/messages", isLoggedIn, uploadMessageAttachment, validateMessageCsrf, messages.send);
   app.post("/messages/:message_id/read", isLoggedIn, messages.markRead);
   app.post("/messages/:message_id/delete", isLoggedIn, messages.remove);
 

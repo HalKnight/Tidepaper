@@ -286,6 +286,30 @@ margin: 0;
 	white-space: pre-wrap;
 }
 
+.article-attachment-image {
+	display: block;
+	height: auto;
+	margin: 18px 0;
+	max-width: 100%;
+}
+
+.article-attachment-file {
+	display: inline-block;
+	margin: 10px 0 !important;
+}
+
+.article-attachment-delete {
+	display: inline-block;
+	margin: 10px 6px 10px 0;
+}
+
+.existing-article-attachment {
+	align-items: center;
+	display: flex;
+	gap: 8px;
+	margin: 8px 0;
+}
+
 .empty-state {
 	background: var(--paper);
 	border: 1px dashed var(--line);

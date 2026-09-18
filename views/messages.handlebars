@@ -29,17 +29,26 @@
 				<div class="message-list-row">
 					<div>
 						<strong>{{subject}}</strong>
+						{{#if attachment}}<i class="fa fa-paperclip" title="Has attachment"></i>{{/if}}
 						<span class="message-sender">From {{senderName}}</span>
 					</div>
 					<small>{{timeago createdAt}}</small>
 				</div>
 				<p>{{body}}</p>
 			</a>
+			{{#if attachment}}
+			<a class="btn btn-default btn-xs message-attachment-link" target="_blank" rel="noopener noreferrer" download="{{attachment.filename}}"
+				href="/messages/{{_id}}/attachment">
+				<i class="fa fa-download"></i> Download {{attachment.filename}}
+			</a>
+			{{/if}}
 			<form method="post" action="/messages/{{_id}}/delete" class="message-delete-form">
 				<input type="hidden" name="_csrf" value="{{../csrfToken}}">
+				{{#unless ../readMessages}}
 				<button type="submit" formaction="/messages/{{_id}}/read" class="btn btn-default btn-xs">
 					<i class="fa fa-check"></i> Mark as read
 				</button>
+				{{/unless}}
 				<button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Delete this message?');">
 					<i class="fa fa-trash"></i> Delete
 				</button>

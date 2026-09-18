@@ -26,6 +26,17 @@ SOFTWARE. -->
 	</div>
 	<div class="panel-body">
 		<p>{{{ article.blogbody }}}</p>
+		{{#each article.attachments}}
+			{{#if inline}}
+			<a target="_blank" rel="noopener noreferrer" href="/articles/{{../article.articleID}}/attachments/{{_id}}">
+				<img class="article-attachment-image" src="/articles/{{../article.articleID}}/attachments/{{_id}}" alt="{{filename}}">
+			</a>
+			{{else}}
+			<a class="btn btn-default article-attachment-file" target="_blank" rel="noopener noreferrer" download="{{filename}}" href="/articles/{{../article.articleID}}/attachments/{{_id}}">
+				<i class="fa fa-paperclip"></i> Download {{filename}}
+			</a>
+			{{/if}}
+		{{/each}}
 	</div>
 	<div class="panel-footer">
 		<div class="article-actions">

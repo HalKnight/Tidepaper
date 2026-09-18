@@ -24,7 +24,7 @@ SOFTWARE. -->
 	<div class="panel-heading">
 		<h3 class="panel-title">Create a new article</h3>
 	</div>
-	<form method="post" action="/articles">
+	<form method="post" action="/articles" enctype="multipart/form-data">
 		<input type="hidden" name="_csrf" value="{{csrfToken}}">
 		<input class="form-control displayNone" type="text" name="editBlogID"
 			value="{{ article.articleID }}">
@@ -59,7 +59,39 @@ SOFTWARE. -->
 				</div>
 			</div>
 			<div class="form-group col-md-12">
+				<div class="col-md-10 col-md-offset-2">
+					<label for="articleAttachments">Images and files</label>
+					<input id="articleAttachments" name="attachments" type="file" class="form-control"
+						accept=".pdf,.txt,.gif,.jpg,.jpeg,.png,.doc,.docx" multiple>
+					<small class="help-block">Up to 5 files, 5 MB each. Images are shown in the article; other files are downloadable.</small>
+				</div>
+			</div>
+			{{#if article.attachments.length}}
+			<div class="form-group col-md-12">
+				<div class="col-md-10 col-md-offset-2">
+					<label>Existing attachments</label>
+					{{#each article.attachments}}
+					<div class="existing-article-attachment">
+						<a target="_blank" rel="noopener noreferrer" href="/articles/{{../article.articleID}}/attachments/{{_id}}">
+							<i class="fa fa-paperclip"></i> {{filename}}
+						</a>
+						<button type="button" class="btn btn-danger btn-xs delete-article-attachment"
+							data-url="/articles/{{../article.articleID}}/attachments/{{_id}}/delete">
+								<i class="fa fa-trash"></i> Delete
+						</button>
+					</div>
+					{{/each}}
+				</div>
+			</div>
+			{{/if}}
+			<div class="form-group col-md-12">
 				<div class="col-md-12 text-right">
+					{{#if article.articleID}}
+					<button class="btn btn-danger btn-xs btn-delete delete-post"
+						data-id="{{article.articleID}}" data-redirect="/home" type="button">
+						<i class="fa fa-trash"></i> Delete article
+					</button>
+					{{/if}}
 					<button type="submit" id="login-btn"
 						class="publishButton displayNone" type="button"></button>
 					<button class="btn btn-success prePublishButton" type="button">

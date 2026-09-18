@@ -1,6 +1,6 @@
 {
   "name": "tidepaper",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "description": "A Blog powered by Node.js",
   "repository": {
     "type": "git",
@@ -8,6 +8,10 @@
   },
   "main": "lama.js",
   "dependencies": {
+    "@aws-sdk/client-rekognition": "^3.1135.0",
+    "@google-cloud/vision": "^6.1.0",
+    "@tensorflow/tfjs": "^4.22.0",
+    "@tensorflow/tfjs-node": "^4.22.0",
     "async": "^3.2.6",
     "bad-words": "^3.0.4",
     "badwords-list": "^1.0.0",
@@ -20,14 +24,19 @@
     "express": "^5.2.1",
     "express-handlebars": "^9.0.1",
     "express-session": "^1.19.0",
+    "jpeg-js": "^0.4.4",
     "MD5": "^1.3.0",
     "method-override": "^3.0.0",
     "moment": "^2.31.0",
     "mongoose": "^9.10.1",
     "morgan": "^1.12.1",
+    "multer": "^2.0.0",
     "node-persist": "^4.0.4",
+    "nsfwjs": "^4.3.0",
+    "omggif": "^1.0.10",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
+    "pngjs": "^7.0.0",
     "properties-reader": "^3.0.1"
   },
   "devDependencies": {
@@ -48,6 +57,7 @@
     "node": ">=22.22.2"
   },
   "allowScripts": {
-    "bcrypt@6.0.0": true
+    "bcrypt@6.0.0": true,
+    "@tensorflow/tfjs-node@4.22.0": true
   }
 }

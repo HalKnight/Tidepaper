@@ -9,7 +9,7 @@
 
 <div class="panel panel-default message-form-panel">
 	<div class="panel-body">
-		<form method="post" action="/messages">
+		<form method="post" action="/messages" class="message-form">
 			<input type="hidden" name="_csrf" value="{{csrfToken}}">
 			<div class="form-group">
 				<label for="recipientSearch">Find a user</label>
@@ -32,6 +32,12 @@
 			<div class="form-group">
 				<label for="body">Message</label>
 				<textarea id="body" name="body" class="form-control" rows="8" maxlength="10000" required></textarea>
+			</div>
+			<div class="form-group">
+				<label for="attachment">Attachment</label>
+				<input id="attachment" name="attachment" type="file" class="form-control"
+					accept=".pdf,.txt,.gif,.jpg,.jpeg,.png,.doc,.docx">
+				<small class="help-block">Optional. Maximum 5 MB.</small>
 			</div>
 			<button type="submit" class="btn btn-primary">
 				<i class="fa fa-send"></i> Send message

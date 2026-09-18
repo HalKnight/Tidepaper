@@ -1,5 +1,6 @@
 var Models = require("../models");
 var Tools = require("../server/tools.js");
+var Moderation = require("../helpers/moderation");
 
 function currentEmail(req) {
   return String(req.user && req.user.local && req.user.local.email || "")
@@ -143,14 +144,25 @@ module.exports = {
           return res.redirect("/messages/compose");
         }
 
-        var message = new Models.Message({
-          senderEmail: senderEmail,
-          senderName: req.user.local.name || senderEmail,
-          recipientEmail: recipientEmail,
-          subject: subject,
-          body: body
-        });
-        return message.save().then(function() {
+        var imageCheck = req.file && req.file.mimetype.indexOf("image/") === 0
+          ? Moderation.checkImage(req.file.buffer, undefined, req.file.mimetype)
+          : Promise.resolve();
+        return imageCheck.then(function() {
+          var message = new Models.Message({
+            senderEmail: senderEmail,
+            senderName: req.user.local.name || senderEmail,
+            recipientEmail: recipientEmail,
+            subject: subject,
+            body: body,
+            attachment: req.file ? {
+              filename: req.file.originalname,
+              contentType: req.file.mimetype,
+              size: req.file.size,
+              data: req.file.buffer
+            } : undefined
+          });
+          return message.save();
+        }).then(function() {
           req.flash("success_messages", "Message sent.");
           return res.redirect("/messages");
         });
@@ -160,6 +172,33 @@ module.exports = {
         req.flash("error", "The message could not be sent.");
         return res.redirect("/messages/compose");
       });
+  },
+
+  attachment: function(req, res) {
+    var email = currentEmail(req);
+    return Models.Message.findOne({
+      _id: req.params.message_id,
+      recipientEmail: email
+    }).lean().exec().then(function(message) {
+      if (!message || !message.attachment || !message.attachment.data) {
+        return res.status(404).send("Attachment not found.");
+      }
+
+      var filename = String(message.attachment.filename || "attachment")
+        .replace(/[\\"\r\n]/g, "_");
+      var contentType = message.attachment.contentType || "application/octet-stream";
+      var data = Buffer.isBuffer(message.attachment.data)
+        ? message.attachment.data
+        : Buffer.from(message.attachment.data.data || message.attachment.data.buffer || message.attachment.data);
+      res.type(contentType);
+      res.set("Content-Disposition", contentType.indexOf("image/") === 0
+        ? "inline; filename=\"" + filename + "\""
+        : "attachment; filename=\"" + filename + "\"");
+      return res.send(data);
+    }).catch(function(err) {
+      console.error("Message attachment lookup failed:", err);
+      return res.status(404).send("Attachment not found.");
+    });
   },
 
   read: function(req, res) {
@@ -180,7 +219,7 @@ module.exports = {
         stats: { stat: true },
         lama: {}
       };
-      renderMessages(req, res, viewModel);
+      renderMessagePage(req, res, viewModel, "message");
     }).catch(function(err) {
       console.error("Message lookup failed:", err);
       return res.redirect("/messages");

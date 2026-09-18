@@ -68,6 +68,16 @@ $(function() {
 		});
 	});
 
+	$('.message-form').off('submit.messageForm').on('submit.messageForm', function() {
+		var form = this;
+		var attachment = form.querySelector('input[name="attachment"]');
+		if (attachment && attachment.files && attachment.files.length) {
+			form.enctype = 'multipart/form-data';
+		} else {
+			form.removeAttribute('enctype');
+		}
+	});
+
   $('.prePublishButton').off('click');
 	$('.prePublishButton').on('click', function(event) {
 		$("[title='Source']").click();
@@ -134,11 +144,24 @@ $(function() {
 			}).done(function(result) {
 				if (result) {
 					setTimeout(function() {
-						location.reload();
+						location = $this.data('redirect') || location.href;
 					}, 0);
 				}
 			});
 		}
+	});
+
+	$('.delete-article-attachment').off('click').on('click', function(event) {
+		event.preventDefault();
+		if (!confirm('Delete this attachment?')) {
+			return;
+		}
+		var $button = $(this);
+		$.post($button.data('url'), { _csrf: csrfToken }).done(function() {
+			$button.closest('.existing-article-attachment').remove();
+		}).fail(function() {
+			alert('The attachment could not be deleted.');
+		});
 	});
   
   $('.delete-comment').off('click');

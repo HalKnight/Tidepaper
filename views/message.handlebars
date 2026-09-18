@@ -9,6 +9,13 @@
 		<span class="message-sender">{{message.senderEmail}} &middot; {{timeago message.createdAt}}</span>
 	</div>
 	<div class="panel-body message-body">{{message.body}}</div>
+	{{#if message.attachment}}
+	<div class="panel-body message-attachment">
+		<a class="btn btn-default" target="_blank" rel="noopener noreferrer" download="{{message.attachment.filename}}" href="/messages/{{message._id}}/attachment">
+			<i class="fa fa-paperclip"></i> Download {{message.attachment.filename}}
+		</a>
+	</div>
+	{{/if}}
 	<div class="panel-footer">
 		<a class="btn btn-primary" href="/messages/compose">
 			<i class="fa fa-reply"></i> Compose a reply

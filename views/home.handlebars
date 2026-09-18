@@ -45,6 +45,18 @@ SOFTWARE. -->
 		<div style="float: right;">
 			<a class="btn btn-primary btn-xs" href="/newArticle/{{ articleID }}">Edit</a>
 		</div>
+			{{else}}
+			{{#if (eq ../user.local.email userID)}}
+			<div style="float: right;">
+				<button class="btn btn-danger btn-delete btn-xs delete-post"
+					data-id="{{ articleID }}">
+					<i class="fa fa-times"></i>
+				</button>
+			</div>
+			<div style="float: right;">
+				<a class="btn btn-primary btn-xs" href="/newArticle/{{ articleID }}">Edit</a>
+			</div>
+			{{/if}}
 		{{/if}}
 		<div class="panel-heading">
 			<div>
@@ -52,6 +64,19 @@ SOFTWARE. -->
 			</div>
 		</div>
 		<div class="panel-body">{{{ blogbody }}}</div>
+		<div class="article-attachments">
+			{{#each attachments}}
+			{{#if inline}}
+			<a target="_blank" rel="noopener noreferrer" href="/articles/{{../articleID}}/attachments/{{_id}}">
+				<img class="article-attachment-image" src="/articles/{{../articleID}}/attachments/{{_id}}" alt="{{filename}}">
+			</a>
+			{{else}}
+			<a class="btn btn-default btn-xs article-attachment-file" target="_blank" rel="noopener noreferrer" download="{{filename}}" href="/articles/{{../articleID}}/attachments/{{_id}}">
+				<i class="fa fa-paperclip"></i> Download {{filename}}
+			</a>
+			{{/if}}
+			{{/each}}
+		</div>
 		<div class="panel-footer">
 			<div class="article-actions">
 				<button class="btn btn-primary btn-xs" id="btn-like" data-id="{{ articleID }}">

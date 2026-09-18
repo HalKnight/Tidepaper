@@ -88,13 +88,15 @@ module.exports = {
         curSet = {
           header: req.body.header,
           newUsers: true,
-          theme: req.body.theme
+          theme: req.body.theme,
+          moderationProvider: req.body.moderationProvider || "local"
         };
       } else {
         curSet = {
           header: req.body.header,
           newUsers: false,
-          theme: req.body.theme
+          theme: req.body.theme,
+          moderationProvider: req.body.moderationProvider || "local"
         };
       }
 
