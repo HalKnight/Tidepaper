@@ -98,6 +98,10 @@ module.exports = function(app) {
     process.env.MONGODB_URI ||
     (localProperties && localProperties.get("database.mongoUri"));
 
+  if (isProduction) {
+    app.set("trust proxy", 1);
+  }
+
   if (isProduction && (!cookieSecret || !sessionSecret)) {
     throw new Error("COOKIE_SECRET and SESSION_SECRET are required in production.");
   }
@@ -136,9 +140,6 @@ module.exports = function(app) {
       }
     })
   );
-  if (isProduction) {
-    app.set("trust proxy", 1);
-  }
   app.use(passport.initialize());
   app.use(passport.session());
   app.use(flash());

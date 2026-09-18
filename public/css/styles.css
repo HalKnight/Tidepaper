@@ -180,6 +180,14 @@ margin: 0;
 	min-width: 0;
 }
 
+.stats {
+	display: none;
+}
+
+.stats.sidebar-visible {
+	display: block;
+}
+
 .stats > div,
 .stats .panel {
 	background: rgba(255, 253, 249, 0.78);

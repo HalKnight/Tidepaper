@@ -37,7 +37,7 @@ SOFTWARE. -->
 		<div class="container">
 			<div class="app-bar">
 				<a class="app-brand" href="/home">{{lama.header}}</a>
-				<button class="hamburger" title="Show or hide the sidebar" aria-label="Show or hide the sidebar">&#9776;</button>
+				<button class="hamburger" type="button" title="Show or hide the sidebar" aria-label="Show or hide the sidebar" aria-expanded="true">&#9776;</button>
 			</div>
 			<nav class="app-nav" aria-label="Main navigation">
 				<a class="btn btn-primary btn-xs" href="/home">Home</a>
@@ -49,7 +49,7 @@ SOFTWARE. -->
 		<div class="container">
 			<div class="row">
 				<div class="col-sm-8 mainBlog">{{{body}}}</div>
-				<div class="col-sm-4 stats">{{> popular this
+				<div class="col-sm-4 stats sidebar-visible">{{> popular this
 					}} {{> comments this }} {{> searchByAuthor this }} {{> searchByDate this }}</div>
 			</div>
 		</div>

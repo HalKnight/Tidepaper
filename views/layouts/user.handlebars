@@ -38,7 +38,7 @@ SOFTWARE. -->
 			<div class="app-bar">
 				<a class="app-brand" href="/home">{{lama.header}}</a>
 				{{#unless stats.stat}}
-				<button class="hamburger" title="Show or hide the sidebar" aria-label="Show or hide the sidebar">&#9776;</button>
+				<button class="hamburger" type="button" title="Show or hide the sidebar" aria-label="Show or hide the sidebar" aria-expanded="true">&#9776;</button>
 				{{/unless}}
 			</div>
 			<nav class="app-nav" aria-label="Main navigation">
@@ -62,7 +62,7 @@ SOFTWARE. -->
 			<div class="row">
 				{{#unless stats.stat}}
 				<div class="col-sm-8 mainBlog">{{{body}}}</div>
-				<div class="col-sm-4 stats">{{> stats this }} {{> popular this
+				<div class="col-sm-4 stats sidebar-visible">{{> stats this }} {{> popular this
 					}} {{> comments this }} {{> searchByAuthor this }} {{> searchByDate this }}</div>
 				{{/unless}} {{#if stats.stat}}
 				<div class="col-sm-12">{{{body}}}</div>

@@ -70,7 +70,8 @@ $(function() {
 					return;
 				}
 				$mainBlog.toggleClass('col-sm-8');
-				$stats.toggle();
+				$stats.toggleClass('sidebar-visible');
+				$(this).attr('aria-expanded', $stats.hasClass('sidebar-visible') ? 'true' : 'false');
 			});
 
   $('#btn-like').off('click');
