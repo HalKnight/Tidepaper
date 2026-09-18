@@ -70,8 +70,8 @@ $(function() {
 					return;
 				}
 				$mainBlog.toggleClass('col-sm-8');
-				$stats.toggleClass('sidebar-visible');
-				$(this).attr('aria-expanded', $stats.hasClass('sidebar-visible') ? 'true' : 'false');
+				$stats.toggleClass('sidebar-hidden');
+				$(this).attr('aria-expanded', $stats.hasClass('sidebar-hidden') ? 'false' : 'true');
 			});
 
   $('#btn-like').off('click');

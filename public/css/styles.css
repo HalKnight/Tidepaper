@@ -181,11 +181,11 @@ margin: 0;
 }
 
 .stats {
-	display: none;
+	display: block;
 }
 
-.stats.sidebar-visible {
-	display: block;
+.stats.sidebar-hidden {
+	display: none;
 }
 
 .stats > div,

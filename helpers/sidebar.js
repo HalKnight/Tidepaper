@@ -38,10 +38,14 @@ module.exports = function(viewModel, callback) {
 			Comments.newest(next);
 		}
 	], function(err, results) {
+		if (err) {
+			console.error('Sidebar data lookup failed:', err.message || err);
+		}
+		results = results || [];
 		viewModel.sidebar = {
-			stats : results[0],
-			popular : results[1],
-			comments : results[2]
+			stats : results[0] || { articles: 0, comments: 0, views: 0, likes: 0 },
+			popular : results[1] || [],
+			comments : results[2] || []
 		};
 
 		callback(viewModel);
