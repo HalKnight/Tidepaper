@@ -28,7 +28,7 @@ SOFTWARE. -->
 	<link href="{{css}}" rel="stylesheet">
 {{/each}}
 <link href="/public/css/font-awesome.css" rel="stylesheet">
-<link rel="stylesheet" type="text/css" href="/public/css/styles.css?v=3.2.1">
+<link rel="stylesheet" type="text/css" href="/public/css/styles.css?v=3.3.0">
 <link rel="stylesheet" type="text/css" href="/public/css/editor.css">
 </head>
 
@@ -46,6 +46,11 @@ SOFTWARE. -->
 				<a class="btn btn-primary btn-xs newArticleButton" href="/newArticle">Create</a>
 				<a class="btn btn-primary btn-xs" href="/profile">Profile</a>
 				<a class="btn btn-primary btn-xs" href="/users/{{user.local.email}}">My Posts</a>
+				<a class="btn btn-primary btn-xs" href="/messages">
+					<i class="fa fa-envelope"></i> Messages
+					{{#if unreadMessages}}<span class="message-alert" title="Unread messages" aria-label="{{unreadMessages}} unread messages"><i class="fa fa-bell"></i> {{unreadMessages}}</span>{{/if}}
+				</a>
+				<a class="btn btn-primary btn-xs" href="/messages/compose"><i class="fa fa-pencil"></i> New message</a>
 				{{#if user.local.admin}}
 				<a class="btn btn-primary btn-xs" href="/admin">Admin</a>
 				<a class="btn btn-primary btn-xs" href="/settings">Settings</a>
@@ -107,7 +112,7 @@ SOFTWARE. -->
   </div>
 </div>
 	<script src="/public/js/jquery-3.2.1.js"></script>
-	<script type="text/javascript" src="/public/js/scripts.js?v=3.2.1"></script>
+	<script type="text/javascript" src="/public/js/scripts.js?v=3.3.0"></script>
 	<script type="text/javascript" src="/public/js/bootstrap.js"></script>
 	<script type="text/javascript" src="/public/js/editor.js"></script>
 	{{#each scripts}}

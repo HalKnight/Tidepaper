@@ -55,6 +55,19 @@ $(function() {
 		$(this).closest('.comments-panel').find('.post-comment').first().toggle();
 	});
 
+	$('#recipientSearch').off('input.recipientSearch').on('input.recipientSearch', function() {
+		var search = String($(this).val() || '').toLowerCase().trim();
+		$('#recipientEmail option').each(function() {
+			var $option = $(this);
+			if (!$option.val()) {
+				$option.show();
+				return;
+			}
+			var searchable = String($option.data('search') || $option.text()).toLowerCase();
+			$option.toggle(!search || searchable.indexOf(search) !== -1);
+		});
+	});
+
   $('.prePublishButton').off('click');
 	$('.prePublishButton').on('click', function(event) {
 		$("[title='Source']").click();

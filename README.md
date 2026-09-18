@@ -2,12 +2,17 @@
 
 Tidepaper is a server-rendered blog application built with Node.js, Express, MongoDB, Mongoose, Passport, and Handlebars.
 
-Current version: **3.2.1**
+Current version: **3.3.0**
 
 ## Features
 
 - Public home page and article pages
 - User signup, login, logout, and profile editing
+- Direct messages between registered users with an authenticated inbox
+- Recipient search by name or email when composing messages
+- Separate unread Inbox and Read messages views
+- Message deletion and explicit Mark as read actions
+- Unread message count alerts in the authenticated navigation
 - Per-user X and Facebook profile links with site defaults for guests
 - First registered user is assigned administrator access
 - Article creation, editing, likes, comments, and deletion
@@ -155,6 +160,13 @@ Users can override the default X and Facebook footer links from `/editProfile`. 
 - `DELETE /articles/:article_id/commentdelete` deletes a comment for its author, the article owner, or an administrator.
 - `GET /profile` displays the current profile.
 - `GET /editProfile` and `POST /editProfile` edit the current profile.
+- `GET /messages` displays the authenticated user's unread inbox.
+- `GET /messages/read` displays the authenticated user's non-deleted read messages.
+- `POST /messages/:message_id/read` marks an owned message as read without opening it.
+- `POST /messages/:message_id/delete` deletes an owned message.
+- `GET /messages/compose` displays the new-message form.
+- `POST /messages` sends a message to another registered user.
+- `GET /messages/:message_id` displays and marks an owned message as read.
 - `GET /newArticle` displays the article editor.
 - `GET /newArticle/:article_id` edits an existing article.
 - `GET /users/:user_id` displays that user's articles, including their private articles when viewed as the author.

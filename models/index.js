@@ -24,6 +24,7 @@ SOFTWARE.
 module.exports = {
 	'Image' : require('./image'),
 	'Comment' : require('./comment'),
+	'Message' : require('./message'),
 	'Article' : require('./article'),
 	'Settings' : require('./settings'),
 	'User' : require('./user')

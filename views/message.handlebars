@@ -1,0 +1,23 @@
+<div class="page-header">
+	<h1>{{message.subject}}</h1>
+	<a class="btn btn-default" href="/messages">Back to messages</a>
+</div>
+
+<div class="panel panel-default message-detail">
+	<div class="panel-heading">
+		<strong>From {{message.senderName}}</strong>
+		<span class="message-sender">{{message.senderEmail}} &middot; {{timeago message.createdAt}}</span>
+	</div>
+	<div class="panel-body message-body">{{message.body}}</div>
+	<div class="panel-footer">
+		<a class="btn btn-primary" href="/messages/compose">
+			<i class="fa fa-reply"></i> Compose a reply
+		</a>
+		<form method="post" action="/messages/{{message._id}}/delete" class="message-delete-form">
+			<input type="hidden" name="_csrf" value="{{csrfToken}}">
+			<button type="submit" class="btn btn-danger" onclick="return confirm('Delete this message?');">
+				<i class="fa fa-trash"></i> Delete
+			</button>
+		</form>
+	</div>
+</div>

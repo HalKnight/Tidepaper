@@ -1,0 +1,62 @@
+<div class="page-header">
+	<h1><i class="fa fa-envelope"></i> Messages</h1>
+	<div class="message-actions">
+		<a class="btn btn-primary" href="/messages/compose">
+			<i class="fa fa-pencil"></i> New message
+		</a>
+		<a class="btn {{#unless readMessages}}btn-default message-action-active{{else}}btn-primary{{/unless}}" href="/messages">
+			<i class="fa fa-inbox"></i> Inbox
+		</a>
+		<a class="btn {{#if readMessages}}btn-default message-action-active{{else}}btn-primary{{/if}}" href="/messages/read">
+			<i class="fa fa-envelope-open"></i> Read messages
+		</a>
+	</div>
+</div>
+
+{{#if success_messages}}
+<div class="alert alert-success">{{success_messages}}</div>
+{{/if}}
+{{#if error_messages}}
+<div class="alert alert-danger">{{error_messages}}</div>
+{{/if}}
+
+{{#if messages.length}}
+<div class="panel panel-default message-list">
+	<div class="list-group">
+		{{#each messages}}
+		<div class="list-group-item{{#unless read}} message-unread{{/unless}}">
+			<a class="message-link" href="/messages/{{_id}}">
+				<div class="message-list-row">
+					<div>
+						<strong>{{subject}}</strong>
+						<span class="message-sender">From {{senderName}}</span>
+					</div>
+					<small>{{timeago createdAt}}</small>
+				</div>
+				<p>{{body}}</p>
+			</a>
+			<form method="post" action="/messages/{{_id}}/delete" class="message-delete-form">
+				<input type="hidden" name="_csrf" value="{{../csrfToken}}">
+				<button type="submit" formaction="/messages/{{_id}}/read" class="btn btn-default btn-xs">
+					<i class="fa fa-check"></i> Mark as read
+				</button>
+				<button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Delete this message?');">
+					<i class="fa fa-trash"></i> Delete
+				</button>
+			</form>
+		</div>
+		{{/each}}
+	</div>
+</div>
+{{else}}
+<div class="empty-state">
+	<i class="fa fa-inbox"></i>
+	{{#if readMessages}}
+	<h3>No read messages</h3>
+	<p>Messages you have opened will appear here.</p>
+	{{else}}
+		<h3>Your inbox is empty</h3>
+		<p>Unread messages from other Tidepaper users will appear here.</p>
+	{{/if}}
+</div>
+{{/if}}

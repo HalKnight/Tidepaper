@@ -27,6 +27,7 @@ var home = require("../controllers/home"),
   admin = require("../controllers/admin"),
   editProfile = require("../controllers/editProfile"),
   settings = require("../controllers/settings"),
+  messages = require("../controllers/messages"),
   passport = require("passport"),
   fs = require("fs"),
   path = require("path"),
@@ -198,6 +199,10 @@ module.exports.initialize = async function(app, passport) {
 
     Tools.getSettings(viewModel, res, "profile");
   });
+  app.get("/messages", isLoggedIn, messages.index);
+  app.get("/messages/compose", isLoggedIn, messages.compose);
+  app.get("/messages/read", isLoggedIn, messages.readMessages);
+  app.get("/messages/:message_id", isLoggedIn, messages.read);
   app.post("/logout", function(req, res) {
     if (req.logout) {
       if (req.logout.length > 0) {
@@ -274,6 +279,9 @@ module.exports.initialize = async function(app, passport) {
   });
 
   app.post("/settings", isLoggedIn, isAdmin, settings.edit);
+  app.post("/messages", isLoggedIn, messages.send);
+  app.post("/messages/:message_id/read", isLoggedIn, messages.markRead);
+  app.post("/messages/:message_id/delete", isLoggedIn, messages.remove);
 
   app.post(
     "/signup",

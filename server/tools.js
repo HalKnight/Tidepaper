@@ -23,6 +23,7 @@ SOFTWARE.
 */
 var Settings = require("../models/settings");
 var UserModel = require("../models/user");
+var MessageModel = require("../models/message");
 var css = [
   {
     css: "/public/css/readable.css"
@@ -67,10 +68,25 @@ module.exports = {
     viewModel.styleSheet = css;
     viewModel.theme = lamaTheme;
 
-    Settings.findOne({
-      settings_id: settingsID
-    }).lean().exec()
-      .then(function(settings) {
+    var unreadMessagesPromise = viewModel.user && viewModel.user.local && viewModel.user.local.email
+      ? MessageModel.countDocuments({
+          recipientEmail: String(viewModel.user.local.email).trim().toLowerCase(),
+          read: false
+        }).catch(function(err) {
+          console.error("Unread message count failed:", err);
+          return 0;
+        })
+      : Promise.resolve(0);
+
+    Promise.all([
+      Settings.findOne({
+        settings_id: settingsID
+      }).lean().exec(),
+      unreadMessagesPromise
+    ])
+      .then(function(results) {
+        var settings = results[0];
+        viewModel.unreadMessages = results[1] || 0;
         if (settings) {
           var savedHeader = String(settings.header || "").trim();
           viewModel.lama.header = savedHeader.toLowerCase() === "lama"

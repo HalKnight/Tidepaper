@@ -1,0 +1,41 @@
+<div class="page-header">
+	<h1><i class="fa fa-pencil"></i> New message</h1>
+	<a class="btn btn-default" href="/messages">Back to messages</a>
+</div>
+
+{{#if error_messages}}
+<div class="alert alert-danger">{{error_messages}}</div>
+{{/if}}
+
+<div class="panel panel-default message-form-panel">
+	<div class="panel-body">
+		<form method="post" action="/messages">
+			<input type="hidden" name="_csrf" value="{{csrfToken}}">
+			<div class="form-group">
+				<label for="recipientSearch">Find a user</label>
+				<input id="recipientSearch" class="form-control" type="search"
+					placeholder="Search by name or email" autocomplete="off">
+			</div>
+			<div class="form-group">
+				<label for="recipientEmail">To</label>
+				<select id="recipientEmail" name="recipientEmail" class="form-control" required>
+					<option value="">Choose a user</option>
+					{{#each recipients}}
+					<option value="{{local.email}}" data-search="{{local.name}} {{local.email}}">{{local.name}} ({{local.email}})</option>
+					{{/each}}
+				</select>
+			</div>
+			<div class="form-group">
+				<label for="subject">Subject</label>
+				<input id="subject" name="subject" class="form-control" maxlength="160" required>
+			</div>
+			<div class="form-group">
+				<label for="body">Message</label>
+				<textarea id="body" name="body" class="form-control" rows="8" maxlength="10000" required></textarea>
+			</div>
+			<button type="submit" class="btn btn-primary">
+				<i class="fa fa-send"></i> Send message
+			</button>
+		</form>
+	</div>
+</div>

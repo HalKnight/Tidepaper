@@ -2,6 +2,13 @@
 
 All notable changes made during the Tidepaper stabilization pass are recorded here.
 
+## 3.3.0 - 2026-09-18
+
+- Added authenticated direct messaging with inbox, compose, read-message, delete, and mark-as-read workflows.
+- Added recipient search by display name or email when composing a message.
+- Added unread message alerts to the authenticated navigation.
+- Updated shared asset cache versions and project documentation for the 3.3.0 release.
+
 ## 3.2.1 - 2026-09-18
 
 - Updated shared layout asset URLs to `v=3.2.1` so Bonto and browsers load the current inline-comment JavaScript and CSS instead of cached `3.1.1` assets.
