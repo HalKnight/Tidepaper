@@ -39,6 +39,24 @@ function isEmpty(value) {
   );
 }
 
+function normalizeTidepaperUrl(value) {
+  var url = String(value || "").trim();
+  return url || "/home";
+}
+
+function normalizeTidepaperIconUrl(value) {
+  if (Array.isArray(value)) {
+    value = value[value.length - 1];
+  }
+  var url = String(value || "").trim();
+  if (/^public\//i.test(url)) {
+    url = "/" + url;
+  } else if (/^upload\//i.test(url)) {
+    url = "/public/" + url;
+  }
+  return /^(https?:\/\/|\/)/i.test(url) ? url : "";
+}
+
 module.exports = {
   index: function(req, res) {
     var viewModel;
@@ -87,6 +105,8 @@ module.exports = {
       if (req.body.newUsers == "on") {
         curSet = {
           header: req.body.header,
+          tidepaperUrl: normalizeTidepaperUrl(req.body.tidepaperUrl),
+          tidepaperIconUrl: normalizeTidepaperIconUrl(req.body.tidepaperIconUrl),
           newUsers: true,
           theme: req.body.theme,
           moderationProvider: req.body.moderationProvider || "local"
@@ -94,6 +114,8 @@ module.exports = {
       } else {
         curSet = {
           header: req.body.header,
+          tidepaperUrl: normalizeTidepaperUrl(req.body.tidepaperUrl),
+          tidepaperIconUrl: normalizeTidepaperIconUrl(req.body.tidepaperIconUrl),
           newUsers: false,
           theme: req.body.theme,
           moderationProvider: req.body.moderationProvider || "local"
@@ -107,21 +129,19 @@ module.exports = {
             return res.redirect("/");
           }
           viewModel.user = user;
-          Settings.findOneAndUpdate(
+          Settings.updateOne(
             {
               settings_id: settingsID
             },
             {
-              $set: curSet
+              $set: curSet,
+              $setOnInsert: { settings_id: settingsID }
             },
             {
-              upsert: true
+              upsert: true,
+              setDefaultsOnInsert: true
             },
             ).then(function(lamaSettings) {
-              if (err) {
-                console.error("Settings update failed:", err);
-                return res.redirect("/");
-              }
               Tools.getSettings(viewModel, res, "settings", true);
             }).catch(function(err) {
               console.error("Settings update failed:", err);
@@ -131,21 +151,19 @@ module.exports = {
         });
         return;
       }
-      Settings.findOneAndUpdate(
+      Settings.updateOne(
         {
           settings_id: settingsID
         },
         {
-          $set: curSet
+          $set: curSet,
+          $setOnInsert: { settings_id: settingsID }
         },
         {
-          upsert: true
+          upsert: true,
+          setDefaultsOnInsert: true
         },
         ).then(function(lamaSettings) {
-          if (err) {
-            console.error("Settings update failed:", err);
-            return res.redirect("/");
-          }
           Tools.getSettings(viewModel, res, "settings", true);
         }).catch(function(err) {
           console.error("Settings update failed:", err);

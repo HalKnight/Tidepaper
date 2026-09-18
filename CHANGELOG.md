@@ -2,6 +2,14 @@
 
 All notable changes made during the Tidepaper stabilization pass are recorded here.
 
+## 3.5.0 - 2026-09-18
+
+- Added configurable Tidepaper TP icon image URL and click destination in administrator Settings.
+- Added support for public upload paths such as `/public/upload/tidepaper-icon.png`.
+- Fixed settings persistence and duplicate-field handling for the TP icon image URL.
+- Improved private/public article visibility, owner controls, feed attachments, and attachment deletion workflows.
+- Updated shared asset cache versions and project documentation for the 3.5.0 release.
+
 ## 3.4.1 - 2026-09-18
 
 - Pinned `nsfwjs` to the Node-compatible `4.3.0` release for Bonto dependency installation.

@@ -28,13 +28,13 @@ SOFTWARE. -->
 <link href="{{css}}" rel="stylesheet">
 {{/each}}
 <link href="/public/css/font-awesome.css" rel="stylesheet">
-<link rel="stylesheet" type="text/css" href="/public/css/styles.css?v=3.4.1">
+<link rel="stylesheet" type="text/css" href="/public/css/styles.css?v=3.5.0">
 </head>
 <body class="theme-{{theme}}">
 	<div>
 		<div class="container">
 			<div class="col-md-12 text-center">
-				<h1>{{lama.header}}</h1>
+				<h1><a class="auth-brand" href="{{lama.tidepaperUrl}}">{{#if lama.tidepaperIconUrl}}<img class="tp-image-logo" src="{{lama.tidepaperIconUrl}}" alt="Tidepaper">{{else}}<span class="tp-logo" aria-hidden="true">TP</span>{{/if}}{{lama.header}}</a></h1>
 			</div>
 			<div class="col-md-12 text-center">
 				<div style="float: left">
@@ -66,7 +66,7 @@ SOFTWARE. -->
 		</div>
 	</div>
 	<script src="/public/js/jquery-3.2.1.js"></script>
-	<script type="text/javascript" src="/public/js/scripts.js?v=3.4.1"></script>
+	<script type="text/javascript" src="/public/js/scripts.js?v=3.5.0"></script>
 	<script type="text/javascript" src="/public/js/bootstrap.js"></script>
 	<script type="text/javascript" src="/public/js/editor.js"></script>
 </body>

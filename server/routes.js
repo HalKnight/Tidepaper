@@ -158,6 +158,20 @@ module.exports.initialize = async function(app, passport) {
   app.get("/", function(req, res) {
     res.redirect("/home");
   });
+  app.get("/tidepaper-link", function(req, res) {
+    Settings.findOne({ settings_id: settingsID }).lean().exec()
+      .then(function(settings) {
+        var target = String(settings && settings.tidepaperUrl || "/home").trim();
+        if (!/^(https?:\/\/|\/)/i.test(target)) {
+          target = "/home";
+        }
+        return res.redirect(target);
+      })
+      .catch(function(err) {
+        console.error("Tidepaper icon link lookup failed:", err);
+        return res.redirect("/home");
+      });
+  });
   app.get("/home", home.index);
   app.get("/home/:article_id/searchbyauthor", home.author);
   app.get("/home/searchbydate", home.date);

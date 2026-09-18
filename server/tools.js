@@ -41,6 +41,11 @@ var properties = PropertiesReader({ sourceFile: "./server/properties.file" }),
   lamaFacebook = properties.get("main.facebook"),
   lamaTheme = properties.get("main.theme");
 
+function normalizeTidepaperUrl(value) {
+  var url = String(value || "").trim();
+  return /^(https?:\/\/|\/)/i.test(url) ? url : "/home";
+}
+
 module.exports = {
   loadCurrentUser: function(req, callback) {
     if (!req || !req.user || !req.user.local || !req.user.local.email) {
@@ -67,6 +72,9 @@ module.exports = {
     }
     viewModel.styleSheet = css;
     viewModel.theme = lamaTheme;
+    viewModel.tidepaperUrl = "/home";
+    viewModel.lama.tidepaperUrl = "/home";
+    viewModel.lama.tidepaperIconUrl = "";
 
     var unreadMessagesPromise = viewModel.user && viewModel.user.local && viewModel.user.local.email
       ? MessageModel.countDocuments({
@@ -88,15 +96,22 @@ module.exports = {
         var settings = results[0];
         viewModel.unreadMessages = results[1] || 0;
         if (settings) {
-          var savedHeader = String(settings.header || "").trim();
-          viewModel.lama.header = savedHeader.toLowerCase() === "lama"
-            ? lamaHeader
-            : settings.header || lamaHeader;
+          var savedHeader = typeof settings.header === "string"
+            ? settings.header.trim()
+            : null;
+          viewModel.lama.header = savedHeader !== null && savedHeader.toLowerCase() !== "lama"
+            ? savedHeader
+            : savedHeader === "lama"
+              ? lamaHeader
+              : lamaHeader;
           if (viewModel.user && viewModel.user.local) {
             viewModel.lama.twitter = viewModel.user.local.xUrl || lamaTwitter;
             viewModel.lama.facebook = viewModel.user.local.facebookUrl || lamaFacebook;
           }
           viewModel.theme = settings.theme || lamaTheme;
+          viewModel.tidepaperUrl = normalizeTidepaperUrl(settings.tidepaperUrl);
+          viewModel.lama.tidepaperUrl = viewModel.tidepaperUrl;
+          viewModel.lama.tidepaperIconUrl = String(settings.tidepaperIconUrl || "").trim();
 
           css = [
             {
@@ -107,7 +122,7 @@ module.exports = {
           viewModel.styleSheet = css;
           if (editSettings) {
             viewModel.settings = settings;
-            if (savedHeader.toLowerCase() === "lama") {
+            if (savedHeader !== null && savedHeader.toLowerCase() === "lama") {
               viewModel.settings.header = lamaHeader;
             }
           }
@@ -119,6 +134,8 @@ module.exports = {
             newSettings.twitter = lamaTwitter;
             newSettings.facebook = lamaFacebook;
             newSettings.theme = lamaTheme;
+            newSettings.tidepaperUrl = "/home";
+            newSettings.tidepaperIconUrl = "";
             newSettings.moderationProvider = "local";
             newSettings.newUsers = true;
             viewModel.settings = newSettings;

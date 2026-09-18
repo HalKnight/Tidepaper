@@ -66,15 +66,6 @@ h1, h2, h3, h4, .h1, .h2, .h3, .h4 {
 	line-height: 1;
 }
 
-.app-brand::before {
-	background: var(--accent);
-	content: "";
-	display: inline-block;
-	height: 10px;
-	margin: 0 10px 2px 0;
-	width: 10px;
-}
-
 .app-nav {
 	display: flex;
 	flex-wrap: wrap;
@@ -113,6 +104,60 @@ margin: 0;
 	font-weight: 700;
 	line-height: 1;
 	padding: 2px 5px;
+}
+
+.tp-brand-link {
+	align-items: center;
+	display: inline-flex;
+	margin-right: 8px;
+	vertical-align: middle;
+}
+
+.tp-logo {
+	align-items: center;
+	background: var(--brand);
+	border: 2px solid var(--accent);
+	border-radius: 50%;
+	box-shadow: 0 0 0 3px rgba(217, 120, 77, 0.18);
+	color: #fffdf9;
+	display: inline-flex;
+	font-family: Georgia, "Times New Roman", serif;
+	font-size: 16px;
+	font-weight: 700;
+	height: 34px;
+	justify-content: center;
+	letter-spacing: -1px;
+	line-height: 1;
+	width: 34px;
+}
+
+.app-brand .tp-logo,
+.auth-brand .tp-logo {
+	font-size: 13px;
+	height: 30px;
+	margin-right: 10px;
+	vertical-align: middle;
+	width: 30px;
+}
+
+.tp-image-logo {
+	height: 34px;
+	margin-right: 10px;
+	max-width: 34px;
+	object-fit: cover;
+	vertical-align: middle;
+	width: 34px;
+}
+
+.auth-brand {
+	color: inherit;
+}
+
+.tp-brand-link:hover .tp-logo,
+.tp-brand-link:focus .tp-logo {
+	background: var(--brand-dark);
+	color: #fffdf9;
+	transform: translateY(-1px) rotate(-4deg);
 }
 
 .btn {

@@ -206,7 +206,7 @@ module.exports = {
     return Models.Message.findOneAndUpdate(
       { _id: req.params.message_id, recipientEmail: email },
       { $set: { read: true } },
-      { new: true }
+      { returnDocument: "after" }
     ).lean().exec().then(function(message) {
       if (!message) {
         return res.redirect("/messages");

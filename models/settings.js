@@ -32,6 +32,14 @@ var SettingsSchema = new Schema({
 	header : {
 		type : String
 	},
+	tidepaperUrl : {
+		type : String,
+		default: "/home"
+	},
+	tidepaperIconUrl : {
+		type : String,
+		default: ""
+	},
 	twitter : {
 		type : String
 	},

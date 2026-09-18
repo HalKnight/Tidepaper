@@ -51,6 +51,16 @@ body {
 						name="header" value="{{settings.header}}">
 				</div>
 				<div class="form-group">
+					<label>Tidepaper icon destination</label> <input type="text" class="form-control"
+						name="tidepaperUrl" value="{{settings.tidepaperUrl}}" placeholder="https://example.com">
+					<small class="help-block">The TP icon can link to an internal or external URL.</small>
+				</div>
+				<div class="form-group">
+					<label>Tidepaper icon image URL</label> <input type="text" class="form-control"
+						name="tidepaperIconUrl" value="{{settings.tidepaperIconUrl}}" placeholder="/public/upload/tidepaper-icon.png">
+					<small class="help-block">Leave blank to use the default TP icon.</small>
+				</div>
+				<div class="form-group">
 					<label>Allow New Users</label> <input style="width: 10%;"
 						type="checkbox" class="form-control" name="newUsers" {{#if settings.newUsers }}checked{{/if}}>
 				</div>

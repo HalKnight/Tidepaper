@@ -28,7 +28,7 @@ SOFTWARE. -->
 	<link href="{{css}}" rel="stylesheet">
 {{/each}}
 <link href="/public/css/font-awesome.css" rel="stylesheet">
-<link rel="stylesheet" type="text/css" href="/public/css/styles.css?v=3.4.1">
+<link rel="stylesheet" type="text/css" href="/public/css/styles.css?v=3.5.0">
 <link rel="stylesheet" type="text/css" href="/public/css/editor.css">
 </head>
 
@@ -36,7 +36,7 @@ SOFTWARE. -->
 	<header class="app-header">
 		<div class="container">
 			<div class="app-bar">
-				<a class="app-brand" href="/home">{{lama.header}}</a>
+				<a class="app-brand" href="{{lama.tidepaperUrl}}">{{#if lama.tidepaperIconUrl}}<img class="tp-image-logo" src="{{lama.tidepaperIconUrl}}" alt="Tidepaper">{{else}}<span class="tp-logo" aria-hidden="true">TP</span>{{/if}}{{lama.header}}</a>
 				{{#unless stats.stat}}
 				<button class="hamburger" type="button" title="Show or hide the sidebar" aria-label="Show or hide the sidebar" aria-expanded="true">&#9776;</button>
 				{{/unless}}
@@ -112,7 +112,7 @@ SOFTWARE. -->
   </div>
 </div>
 	<script src="/public/js/jquery-3.2.1.js"></script>
-	<script type="text/javascript" src="/public/js/scripts.js?v=3.4.1"></script>
+	<script type="text/javascript" src="/public/js/scripts.js?v=3.5.0"></script>
 	<script type="text/javascript" src="/public/js/bootstrap.js"></script>
 	<script type="text/javascript" src="/public/js/editor.js"></script>
 	{{#each scripts}}

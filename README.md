@@ -2,7 +2,7 @@
 
 Tidepaper is a server-rendered blog application built with Node.js, Express, MongoDB, Mongoose, Passport, and Handlebars.
 
-Current version: **3.4.1**
+Current version: **3.5.0**
 
 ## Features
 
@@ -12,7 +12,10 @@ Current version: **3.4.1**
 - Recipient search by name or email when composing messages
 - Optional message attachments up to 5 MB for common document, image, and text formats
 - Article images and downloadable files, with inline image rendering
+- Article-owner and administrator attachment deletion from the Edit Article page
 - Local NSFWJS image moderation by default, with cloud provider choices in Settings
+- Configurable Tidepaper TP icon image and destination from administrator Settings
+- Public upload paths such as `/public/upload/tidepaper-icon.png` for the TP image
 - Separate unread Inbox and Read messages views
 - Message deletion and explicit Mark as read actions
 - Unread message count alerts in the authenticated navigation
@@ -129,7 +132,7 @@ Default site settings are stored in [server/properties.file](server/properties.f
 - `main.theme`: default Bootswatch theme
 - `admin.settingsID`: identifier for the settings document
 
-Administrators can override the header, theme, and whether new users may register from `/settings`. Site-default X and Facebook URLs remain in `server/properties.file`. Available themes are Readable, Slate, Flatly, United, Cyborg, and Solar.
+Administrators can override the header, TP icon destination, TP icon image URL, theme, moderation provider, and whether new users may register from `/settings`. The TP icon image accepts an internal path such as `/public/upload/tidepaper-icon.png` or an HTTPS URL. Site-default X and Facebook URLs remain in `server/properties.file`. Available themes are Readable, Slate, Flatly, United, Cyborg, and Solar.
 
 Image moderation defaults to local NSFWJS using the portable JavaScript TensorFlow backend and does not require an API fee. Settings also exposes AWS Rekognition, Google Cloud Vision SafeSearch, and Azure AI Content Safety choices. Configure the matching environment variables before selecting a cloud mode. Non-image article/message files are restricted by type and size but are not content-moderated.
 
@@ -159,18 +162,22 @@ Users can override the default X and Facebook footer links from `/editProfile`. 
 - `GET /home/:article_id/searchbyauthor` searches articles by author name.
 - `GET /home/searchbydate?from=YYYY-MM-DD&to=YYYY-MM-DD` searches articles in an inclusive date range.
 - `GET /articles/:article_id` displays an article.
+- `GET /articles/:article_id/attachments/:attachment_id` renders or downloads an article attachment.
 - `GET /login` displays the login form.
 - `GET /signup` displays signup when registration is enabled.
 
 ### Authenticated routes
 
 - `POST /articles` creates or updates an article.
+- `POST /articles/:article_id/attachments` uploads up to five article attachments for the owner or an administrator.
+- `POST /articles/:article_id/attachments/:attachment_id/delete` removes an owned article attachment.
 - `POST /articles/:article_id/like` increments an article like count.
 - `POST /articles/:article_id/comment` creates a comment.
 - `DELETE /articles/:article_id` deletes an article for its owner or an administrator.
 - `DELETE /articles/:article_id/commentdelete` deletes a comment for its author, the article owner, or an administrator.
 - `GET /profile` displays the current profile.
 - `GET /editProfile` and `POST /editProfile` edit the current profile.
+- `GET /my-posts` redirects to the authenticated user's article page.
 - `GET /messages` displays the authenticated user's unread inbox.
 - `GET /messages/read` displays the authenticated user's non-deleted read messages.
 - `POST /messages/:message_id/read` marks an owned message as read without opening it.
@@ -179,6 +186,7 @@ Users can override the default X and Facebook footer links from `/editProfile`. 
 - `POST /messages` sends a message to another registered user.
 - `GET /messages/:message_id/attachment` downloads an attachment from an owned message.
 - `GET /messages/:message_id` displays and marks an owned message as read.
+- `GET /messages/:message_id/attachment` renders or downloads an owned message attachment.
 - `GET /newArticle` displays the article editor.
 - `GET /newArticle/:article_id` edits an existing article.
 - `GET /users/:user_id` displays that user's articles, including their private articles when viewed as the author.
@@ -192,6 +200,7 @@ Users can override the default X and Facebook footer links from `/editProfile`. 
 - `POST /admin/users/delete` deletes a selected user. The administrator chooses whether to keep or delete that user's articles; deleting articles also deletes their attached comments.
 - `GET /settings` displays site settings.
 - `POST /settings` updates site settings.
+- `GET /tidepaper-link` redirects the TP icon using the current saved destination setting.
 - `GET /editProfileAdmin/:user_id` edits another user.
 - `POST /editProfileAdmin` saves an administrator edit.
 
@@ -246,7 +255,9 @@ The test suite and route-render regression coverage verify that authenticated us
 - Do not run two Tidepaper instances on the same host and port.
 - Restart the server after changing JavaScript, environment variables, or `server/properties.file`.
 - Use HTTPS in production because sessions and CSRF tokens rely on secure cookie settings there.
-- The declared `connect-mongo` dependency is not currently wired into `server/configure.js`; installing a package alone does not change the active session store.
+- `connect-mongo` is configured as the session store. Production deployments must provide the same MongoDB URI used by the application.
+- For Bonto, run `npm install` or `npm ci` during the build phase, then use `npm start` as the start command. Restart after pulling a new release.
+- Node.js `22.22.2` or newer is required. `nsfwjs` is pinned to `4.3.0`, and local moderation uses portable TensorFlow without native `tfjs-node` bindings.
 - `bad-words` and `badwords-list` remain on their latest CommonJS-compatible releases because the newest `badwords-list` release is ESM-only and cannot be loaded by this CommonJS application without a larger module-system migration.
 
 ## License
