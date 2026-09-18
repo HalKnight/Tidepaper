@@ -47,7 +47,7 @@ Current version: **3.5.1**
 ## Installation
 
 ```powershell
-git clone https://github.com/HalKnight/Lama.git
+git clone https://github.com/HalKnight/Tidepaper.git
 Set-Location Lama
 npm install
 ```
@@ -106,7 +106,7 @@ For local development, create `server/properties.local.file`. This file is ignor
 
 ```properties
 [database]
-mongoUri = mongodb://127.0.0.1:27017/lama
+mongoUri = mongodb://127.0.0.1:27017/tidepaper
 
 [security]
 cookieSecret = replace-with-a-long-random-cookie-secret
@@ -116,7 +116,7 @@ sessionSecret = replace-with-a-long-random-session-secret
 For hosted or production databases, prefer environment variables. In local development, the security values may be stored in the ignored properties file. Environment variables always take precedence:
 
 ```powershell
-$env:MONGODB_URI="mongodb://user:password@host:27017/lama"
+$env:MONGODB_URI="mongodb://user:password@host:27017/tidepaper"
 npm start
 ```
 
