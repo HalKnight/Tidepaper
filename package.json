@@ -1,6 +1,6 @@
 {
   "name": "tidepaper",
-  "version": "3.4.0",
+  "version": "3.4.1",
   "description": "A Blog powered by Node.js",
   "repository": {
     "type": "git",
@@ -11,7 +11,6 @@
     "@aws-sdk/client-rekognition": "^3.1135.0",
     "@google-cloud/vision": "^6.1.0",
     "@tensorflow/tfjs": "^4.22.0",
-    "@tensorflow/tfjs-node": "^4.22.0",
     "async": "^3.2.6",
     "bad-words": "^3.0.4",
     "badwords-list": "^1.0.0",
@@ -32,7 +31,7 @@
     "morgan": "^1.12.1",
     "multer": "^2.0.0",
     "node-persist": "^4.0.4",
-    "nsfwjs": "^4.3.0",
+    "nsfwjs": "4.3.0",
     "omggif": "^1.0.10",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",

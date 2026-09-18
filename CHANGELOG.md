@@ -2,6 +2,13 @@
 
 All notable changes made during the Tidepaper stabilization pass are recorded here.
 
+## 3.4.1 - 2026-09-18
+
+- Pinned `nsfwjs` to the Node-compatible `4.3.0` release for Bonto dependency installation.
+- Removed the unused native `@tensorflow/tfjs-node` dependency to avoid platform-specific binding failures.
+- Switched local NSFWJS image decoding to portable JavaScript decoders for JPEG, PNG, and GIF files.
+- Updated shared asset cache versions and project documentation for the 3.4.1 release.
+
 ## 3.4.0 - 2026-09-18
 
 - Added article image and file attachments with inline image rendering and protected downloads.
