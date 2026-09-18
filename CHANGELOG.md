@@ -2,6 +2,11 @@
 
 All notable changes made during the Tidepaper stabilization pass are recorded here.
 
+## 3.2.1 - 2026-09-18
+
+- Updated shared layout asset URLs to `v=3.2.1` so Bonto and browsers load the current inline-comment JavaScript and CSS instead of cached `3.1.1` assets.
+- Updated the application release version and documentation to 3.2.1.
+
 ## 3.2.0 - 2026-09-18
 
 - Added inline comments to the home, personal-feed, author-search, and date-search article views.
