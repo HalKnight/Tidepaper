@@ -61,13 +61,16 @@ $(function() {
 		}, 500);
 	});
 
-	$('.stats').hide();
-	//$("div.mainBlog").toggleClass("col-sm-8");
+	var $stats = $('.stats');
+	var $mainBlog = $('div.mainBlog');
 	$('.hamburger').off('click.hamburger').on('click.hamburger',
 			function(event) {
 				event.preventDefault();
-				$("div.mainBlog").toggleClass("col-sm-8")
-				$('.stats').toggle();
+				if (!$stats.length) {
+					return;
+				}
+				$mainBlog.toggleClass('col-sm-8');
+				$stats.toggle();
 			});
 
   $('#btn-like').off('click');

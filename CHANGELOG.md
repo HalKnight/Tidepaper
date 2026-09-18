@@ -2,6 +2,13 @@
 
 All notable changes made during the Tidepaper stabilization pass are recorded here.
 
+## 3.1.1 - 2026-09-18
+
+- Fixed the public and authenticated sidebar behavior so it is visible by default and can be collapsed with the menu button.
+- Removed malformed duplicate document markup from the public layout.
+- Improved article contrast and readability in the Slate, Cyborg, and Solar themes.
+- Updated the application release version and documentation to 3.1.1.
+
 ## 3.1.0 - 2026-09-18
 
 - Added private articles with author and administrator-only access.
