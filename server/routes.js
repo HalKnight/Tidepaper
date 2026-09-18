@@ -243,26 +243,25 @@ module.exports.initialize = async function(app, passport) {
       User.findOne({
         "local.email": req.params.user_id
       }).lean().exec().then(function(user) {
-          if (err) {
-            console.error("Admin edit user lookup failed:", err);
+          if (!user) {
             return res.redirect("/admin");
           }
-          if (user) {
-            if (!isEmpty(req.user)) {
-              Tools.loadCurrentUser(req, function(err, reqUser) {
-                if (err) {
-                  console.error("Admin current user lookup failed:", err);
-                  return res.redirect("/admin");
-                }
-                viewModel.user = reqUser;
-                viewModel.userAdmin = user;
-                Tools.getSettings(viewModel, res, "editProfileAdmin");
-              });
-              return;
-            }
-            viewModel.userAdmin = user;
-            Tools.getSettings(viewModel, res, "editProfileAdmin");
+
+          if (!isEmpty(req.user)) {
+            Tools.loadCurrentUser(req, function(err, reqUser) {
+              if (err) {
+                console.error("Admin current user lookup failed:", err);
+                return res.redirect("/admin");
+              }
+              viewModel.user = reqUser;
+              viewModel.userAdmin = user;
+              Tools.getSettings(viewModel, res, "editProfileAdmin");
+            });
+            return;
           }
+
+          viewModel.userAdmin = user;
+          Tools.getSettings(viewModel, res, "editProfileAdmin");
         }).catch(function(err) {
           console.error("Admin edit user lookup failed:", err);
           return res.redirect("/admin");

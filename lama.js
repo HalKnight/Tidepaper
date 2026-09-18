@@ -35,7 +35,9 @@ var express = require("express"),
     PropertiesReaderModule;
 
 var server_port = process.env.PORT || 8080;
-var server_ip_address = process.env.HOST || "127.0.0.1";
+var server_ip_address =
+  process.env.HOST ||
+  (process.env.NODE_ENV === "production" ? "0.0.0.0" : "127.0.0.1");
 var localPropertiesPath = path.join(__dirname, "server", "properties.local.file");
 var localProperties = fs.existsSync(localPropertiesPath)
   ? PropertiesReader({ sourceFile: localPropertiesPath })

@@ -34,6 +34,7 @@ var path = require("path"),
   errorHandler = require("errorhandler"),
   moment = require("moment"),
   session = require("express-session"),
+  MongoStoreModule = require("connect-mongo"),
   passport = require("passport"),
   LocalStrategy = require("passport-local"),
   flash = require("connect-flash"),
@@ -93,6 +94,9 @@ module.exports = function(app) {
   var sessionSecret =
     process.env.SESSION_SECRET ||
     (localProperties && localProperties.get("security.sessionSecret"));
+  var mongoUri =
+    process.env.MONGODB_URI ||
+    (localProperties && localProperties.get("database.mongoUri"));
 
   if (isProduction && (!cookieSecret || !sessionSecret)) {
     throw new Error("COOKIE_SECRET and SESSION_SECRET are required in production.");
@@ -100,8 +104,26 @@ module.exports = function(app) {
 
   app.use(cookieParser(cookieSecret || "local-development-cookie-secret"));
 
+  var MongoStore = MongoStoreModule.MongoStore || MongoStoreModule.default || MongoStoreModule;
+  var sessionStore = MongoStore && typeof MongoStore.create === "function"
+    ? MongoStore.create({
+        mongoUrl: mongoUri,
+        collectionName: "sessions",
+        ttl: 14 * 24 * 60 * 60,
+        autoRemove: "native",
+        stringify: false
+      })
+    : new MongoStore({
+        mongoUrl: mongoUri,
+        collectionName: "sessions",
+        ttl: 14 * 24 * 60 * 60,
+        autoRemove: "native",
+        stringify: false
+      });
+
   app.use(
     session({
+      store: sessionStore,
       secret: sessionSecret || "local-development-session-secret",
       saveUninitialized: false,
       resave: false,
