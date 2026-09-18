@@ -100,6 +100,8 @@ module.exports.initialize = async function(app, passport) {
   app.get("/home/:article_id/searchbyauthor", home.author);
   app.get("/home/searchbydate", home.date);
   app.get("/admin", isLoggedIn, admin.index);
+  app.get("/admin/users/new", isLoggedIn, isAdmin, admin.createUserForm);
+  app.get("/users/:user_id", home.userHome);
   app.post("/admin/users/delete", isLoggedIn, isAdmin, admin.removeUser);
   app.get("/settings", isLoggedIn, isAdmin, settings.index);
   app.get("/newArticle", isLoggedIn, newArticle.index);
@@ -278,6 +280,19 @@ module.exports.initialize = async function(app, passport) {
     passport.authenticate("local-signup", {
       successRedirect: "/home",
       failureRedirect: "/signup",
+      badRequestMessage: "Missing username or password.",
+      failureFlash: true
+    })
+  );
+
+  app.post(
+    "/admin/users/create",
+    isLoggedIn,
+    isAdmin,
+    passport.authenticate("local-signup", {
+      session: false,
+      successRedirect: "/admin",
+      failureRedirect: "/admin/users/new",
       badRequestMessage: "Missing username or password.",
       failureFlash: true
     })

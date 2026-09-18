@@ -24,6 +24,14 @@ SOFTWARE. -->
   <div class="alert alert-danger">{{message}}</div>
 {{/if}}
 <div>
+	{{#if userHome}}
+	<div class="page-header">
+		<h2>{{#if userHome.name}}{{ userHome.name }}{{else}}{{ userHome.email }}{{/if}}'s articles</h2>
+		<p>
+			<a class="btn btn-primary btn-xs" href="/home">View all posts</a>
+		</p>
+	</div>
+	{{/if}}
 	{{#each articles}}
 	<div class="panel panel-primary">
 		{{#if ../user.local.admin}}
@@ -53,7 +61,7 @@ SOFTWARE. -->
 					<strong class="likes-count">{{ likes }}</strong> &nbsp; - &nbsp; <i
 						class="fa fa-eye"></i> <strong>{{ views }}</strong> &nbsp; -
 					&nbsp; Posted: <em class="text-muted">{{ timestamp }}</em> &nbsp; -
-					&nbsp; Author: <em class="text-muted">{{ userName }}</em>
+					&nbsp; Author: <em class="text-muted"><a href="/users/{{ userID }}">{{ userName }}</a></em>
 				</div>
 				<a style="float: right; margin-right: 10px !important;"
 					href="/articles/{{ articleID }}" class="btn btn-default">View</a>

@@ -53,6 +53,16 @@ function isEmpty(value) {
   );
 }
 
+function canViewPrivateArticle(req, article) {
+  return (
+    !article.private ||
+    (req.isAuthenticated() &&
+      req.user &&
+      req.user.local &&
+      (req.user.local.admin || req.user.local.email === article.userID))
+  );
+}
+
 module.exports = {
   index: function(req, res) {
     var viewModel;
@@ -86,6 +96,10 @@ module.exports = {
           },
           ).lean().exec().then(function(article) {
             if (article) {
+                if (!canViewPrivateArticle(req, article)) {
+                  return res.redirect("/home");
+                }
+
               article.views = article.views + 1;
               viewModel.article = article;
               var hydratedArticle = Models.Article.hydrate(article);
@@ -145,6 +159,10 @@ module.exports = {
       },
       ).lean().exec().then(function(article) {
         if (article) {
+          if (!canViewPrivateArticle(req, article)) {
+            return res.redirect("/home");
+          }
+
           article.views = article.views + 1;
           viewModel.article = article;
           var hydratedArticle = Models.Article.hydrate(article);
@@ -211,13 +229,16 @@ module.exports = {
         articleQuery.userID = req.user.local.email;
       }
 
+      var isPrivate = req.body.private === "true" || req.body.private === "on";
+
       Models.Article.findOneAndUpdate(
         articleQuery,
         {
           $set: {
             title: req.body.title,
             description: req.body.description,
-            blogbody: req.body.blogbody
+            blogbody: req.body.blogbody,
+            private: isPrivate
           }
         }
       ).then(function(exArticle) {
@@ -237,6 +258,7 @@ module.exports = {
               articleID: postUrl,
               description: req.body.description,
               blogbody: req.body.blogbody,
+              private: isPrivate,
               userID: req.user.local.email,
               userName: req.user.local.name
             });

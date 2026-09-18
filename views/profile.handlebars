@@ -42,6 +42,12 @@ body {
         <div style="float: left">
 					<a class="btn btn-primary btn-xs" href="/editProfile">Edit</a>
 				</div>
+				<div style="float: left; margin-left: 4px">
+					<a class="btn btn-primary btn-xs" href="/users/{{user.local.email}}">My Posts</a>
+				</div>
+				<div style="float: left; margin-left: 4px">
+					<a class="btn btn-primary btn-xs" href="/home">All Posts</a>
+				</div>
 				<div class="well">
 					<h3>
 						<span class="fa fa-user">&nbsp;:&nbsp;{{user.local.name}}</span>

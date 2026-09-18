@@ -61,15 +61,20 @@ module.exports = {
     viewModel.lama.twitter = lamaTwitter;
     viewModel.lama.facebook = lamaFacebook;
     viewModel.styleSheet = css;
+    viewModel.theme = lamaTheme;
 
     Settings.findOne({
       settings_id: settingsID
     }).lean().exec()
       .then(function(settings) {
         if (settings) {
-          viewModel.lama.header = settings.header;
+          var savedHeader = String(settings.header || "").trim();
+          viewModel.lama.header = savedHeader.toLowerCase() === "lama"
+            ? lamaHeader
+            : settings.header || lamaHeader;
           viewModel.lama.twitter = settings.twitter;
           viewModel.lama.facebook = settings.facebook;
+          viewModel.theme = settings.theme || lamaTheme;
 
           css = [
             {
@@ -80,6 +85,9 @@ module.exports = {
           viewModel.styleSheet = css;
           if (editSettings) {
             viewModel.settings = settings;
+            if (savedHeader.toLowerCase() === "lama") {
+              viewModel.settings.header = lamaHeader;
+            }
           }
           res.render(page, viewModel);
         } else {

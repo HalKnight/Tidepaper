@@ -1,8 +1,8 @@
-# Lama
+# Tidepaper
 
-Lama is a server-rendered blog application built with Node.js, Express, MongoDB, Mongoose, Passport, and Handlebars.
+Tidepaper is a server-rendered blog application built with Node.js, Express, MongoDB, Mongoose, Passport, and Handlebars.
 
-Current version: **3.0.0**
+Current version: **3.1.0**
 
 ## Features
 
@@ -10,8 +10,9 @@ Current version: **3.0.0**
 - User signup, login, logout, and profile editing
 - First registered user is assigned administrator access
 - Article creation, editing, likes, comments, and deletion
+- Private articles visible only to their author and administrators
 - Comment moderation by comment owner, article owner, or administrator
-- Administrator dashboard and user management
+- Administrator dashboard, user management, and admin-created accounts
 - Site header, social links, theme, and signup settings
 - Popular articles, recent comments, and site statistics
 - Server-rendered Handlebars layouts and partials
@@ -102,13 +103,13 @@ Do not commit database credentials, session secrets, or cookie secrets. Rotate a
 Default site settings are stored in [server/properties.file](server/properties.file):
 
 - `main.version`: footer/version text
-- `main.lamaTitle`: site header
+- `main.lamaTitle`: site header, defaulting to Tidepaper
 - `main.twitter`: Twitter link
 - `main.facebook`: Facebook link
 - `main.theme`: default Bootswatch theme
 - `admin.settingsID`: identifier for the settings document
 
-Administrators can override the header, social links, theme, and whether new users may register from `/settings`.
+Administrators can override the header, social links, theme, and whether new users may register from `/settings`. Available themes are Readable, Slate, Flatly, United, Cyborg, and Solar.
 
 ## Application structure
 
@@ -148,11 +149,14 @@ Administrators can override the header, social links, theme, and whether new use
 - `GET /editProfile` and `POST /editProfile` edit the current profile.
 - `GET /newArticle` displays the article editor.
 - `GET /newArticle/:article_id` edits an existing article.
+- `GET /users/:user_id` displays that user's articles, including their private articles when viewed as the author.
 - `POST /logout` logs the user out. Logout is POST-only and CSRF-protected.
 
 ### Administrator routes
 
 - `GET /admin` displays the user administration page.
+- `GET /admin/users/new` displays the administrator-only user creation form, even when public signup is disabled.
+- `POST /admin/users/create` creates a user through the administrator-only flow.
 - `POST /admin/users/delete` deletes a selected user. The administrator chooses whether to keep or delete that user's articles; deleting articles also deletes their attached comments.
 - `GET /settings` displays site settings.
 - `POST /settings` updates site settings.
@@ -167,6 +171,7 @@ Administrators can override the header, social links, theme, and whether new use
 - The first user with administrator access becomes the initial administrator.
 - Profile and administrator profile updates propagate changed email ownership to the user's articles.
 - Article update and deletion queries are restricted to the article owner unless the requester is an administrator.
+- Private articles are excluded from public feeds and searches; direct access is limited to the author or an administrator.
 - Comment deletion checks the comment author, article owner, and administrator roles.
 - Administrator user deletion cannot target the currently logged-in administrator account and defaults to keeping the user's articles.
 
@@ -181,7 +186,7 @@ Administrators can override the header, social links, theme, and whether new use
 
 ## Session and rate-limit behavior
 
-Sessions currently use `express-session`'s default in-memory store. This is suitable only for local development or a single short-lived process. For production or multiple instances, configure a shared persistent session store.
+Sessions use MongoDB-backed persistence through `connect-mongo`, which is suitable for production deployments using the configured MongoDB connection.
 
 Login and signup attempts are limited to 10 attempts per 15-minute window per client address. Expired limiter entries are periodically removed. The limiter is process-local, so a shared store is required for consistent limits across multiple instances.
 
@@ -206,7 +211,7 @@ The test suite and route-render regression coverage verify that authenticated us
 
 ## Operational notes
 
-- Do not run two Lama instances on the same host and port.
+- Do not run two Tidepaper instances on the same host and port.
 - Restart the server after changing JavaScript, environment variables, or `server/properties.file`.
 - Use HTTPS in production because sessions and CSRF tokens rely on secure cookie settings there.
 - The declared `connect-mongo` dependency is not currently wired into `server/configure.js`; installing a package alone does not change the active session store.
@@ -214,6 +219,6 @@ The test suite and route-render regression coverage verify that authenticated us
 
 ## License
 
-Lama is distributed under the MIT License. See the license text included in the source files.
+Tidepaper is distributed under the MIT License. See the license text included in the source files.
 
 See [CHANGELOG.md](CHANGELOG.md) for the stabilization and bug-fix history.

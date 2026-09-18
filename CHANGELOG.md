@@ -1,6 +1,15 @@
 # Changelog
 
-All notable changes made during the Lama stabilization pass are recorded here.
+All notable changes made during the Tidepaper stabilization pass are recorded here.
+
+## 3.1.0 - 2026-09-18
+
+- Added private articles with author and administrator-only access.
+- Added an administrator-only user creation flow that bypasses the public signup setting.
+- Redesigned the default Tidepaper layout with responsive navigation, clearer typography, improved article surfaces, and a refreshed visual system.
+- Overhauled the Slate, Flatly, United, Cyborg, and Solar themes with theme-aware palettes and improved article readability.
+- Renamed the visible application branding from Lama to Tidepaper.
+- Updated documentation and runtime version metadata to 3.1.0.
 
 ## 3.0.0 - 2026-09-17
 
@@ -86,7 +95,7 @@ All notable changes made during the Lama stabilization pass are recorded here.
 ## 2.0.1 - Existing project release
 
 - Refactored edit-profile buttons into the upper-left profile area.
-- Added the original Lama theme and settings behavior documented in the legacy README.
+- Added the original Tidepaper theme and settings behavior documented in the legacy README.
 
 ## Historical notes
 
