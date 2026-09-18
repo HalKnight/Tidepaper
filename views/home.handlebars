@@ -33,6 +33,7 @@ SOFTWARE. -->
 	</div>
 	{{/if}}
 	{{#each articles}}
+	<div class="article-card">
 	<div class="panel panel-primary">
 		{{#if ../user.local.admin}}
 		<div style="float: right;">
@@ -52,21 +53,24 @@ SOFTWARE. -->
 		</div>
 		<div class="panel-body">{{{ blogbody }}}</div>
 		<div class="panel-footer">
-			<div class="row">
-				<div class="col-md-10">
-					<button class="btn btn-primary" id="btn-like"
-						data-id="{{ articleID }}">
-						<i class="fa fa-heart"> Like</i>
-					</button>
-					<strong class="likes-count">{{ likes }}</strong> &nbsp; - &nbsp; <i
-						class="fa fa-eye"></i> <strong>{{ views }}</strong> &nbsp; -
-					&nbsp; Posted: <em class="text-muted">{{ timestamp }}</em> &nbsp; -
-					&nbsp; Author: <em class="text-muted"><a href="/users/{{ userID }}">{{ userName }}</a></em>
-				</div>
-				<a style="float: right; margin-right: 10px !important;"
-					href="/articles/{{ articleID }}" class="btn btn-default">View</a>
+			<div class="article-actions">
+				<button class="btn btn-primary btn-xs" id="btn-like" data-id="{{ articleID }}">
+					<i class="fa fa-heart"></i> Like
+				</button>
+				<button type="button" class="btn btn-default btn-xs show-comments" aria-expanded="false">
+					<i class="fa fa-comments-o"></i> Comments
+				</button>
+				<a href="/articles/{{ articleID }}" class="btn btn-default btn-xs">View</a>
+			</div>
+			<div class="article-meta">
+				<strong class="likes-count">{{ likes }}</strong> likes &middot;
+				<i class="fa fa-eye"></i> <strong>{{ views }}</strong> views &middot;
+				Posted: <em class="text-muted">{{ timestamp }}</em> &middot;
+				Author: <em class="text-muted"><a href="/users/{{ userID }}">{{ userName }}</a></em>
 			</div>
 		</div>
+	</div>
+	{{> articleComments this}}
 	</div>
 	{{/each}}
 </div>

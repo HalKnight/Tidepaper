@@ -71,6 +71,7 @@ module.exports = {
         article: {},
         user: {},
         comments: [],
+        commentsVisible: req.query.comments === "1",
         layout: "user",
         scripts: scripts,
         lama: {}
@@ -79,6 +80,7 @@ module.exports = {
       viewModel = {
         article: {},
         comments: [],
+        commentsVisible: req.query.comments === "1",
         lama: {}
       };
     }

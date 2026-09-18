@@ -28,23 +28,25 @@ SOFTWARE. -->
 		<p>{{{ article.blogbody }}}</p>
 	</div>
 	<div class="panel-footer">
-		<div class="row">
-			<div class="col-md-10">
-				<button class="btn btn-primary" id="btn-like"
-					data-id="{{ article.articleID }}">
-					<i class="fa fa-heart"> Like</i>
-				</button>
-				<strong class="likes-count">{{ article.likes }}</strong> &nbsp; -
-				&nbsp; <i class="fa fa-eye"></i> <strong>{{ article.views
-					}}</strong> &nbsp; - &nbsp; Posted: <em class="text-muted">{{
-					article.timestamp }}</em>
-			</div>
+		<div class="article-actions">
+			<button class="btn btn-primary btn-xs" id="btn-like" data-id="{{ article.articleID }}">
+				<i class="fa fa-heart"></i> Like
+			</button>
+			<button class="btn btn-default btn-xs show-comments" type="button"
+					aria-expanded="{{#if commentsVisible}}true{{else}}false{{/if}}">
+					<i class="fa fa-comments-o"></i> View comments
+			</button>
+		</div>
+		<div class="article-meta">
+			<strong class="likes-count">{{ article.likes }}</strong> likes &middot;
+			<i class="fa fa-eye"></i> <strong>{{ article.views }}</strong> views &middot;
+			Posted: <em class="text-muted">{{ article.timestamp }}</em>
 		</div>
 	</div>
 </div>
 
 
-<div class="panel panel-default">
+<div id="comments" class="panel panel-default comments-panel{{#if commentsVisible}} comments-visible{{/if}}">
 	<div class="panel-heading">
 		<div class="row">
 			<div class="col-md-8">
@@ -59,7 +61,7 @@ SOFTWARE. -->
 		</div>
 	</div>
 	<div class="panel-body">
-		<blockquote id="post-comment">
+		<blockquote id="post-comment" class="post-comment">
 			<div class="row">
 				<form method="post"
 					action="/articles/{{ article.articleID }}/comment">

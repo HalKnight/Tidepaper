@@ -2,6 +2,14 @@
 
 All notable changes made during the Tidepaper stabilization pass are recorded here.
 
+## 3.2.0 - 2026-09-18
+
+- Added inline comments to the home, personal-feed, author-search, and date-search article views.
+- Added per-article comment expand/collapse controls without redirecting to the article detail page.
+- Streamlined Like, Comments, and View controls into a single compact action row.
+- Kept article detail comments collapsed by default while allowing feed actions to open them directly.
+- Updated the application release version and documentation to 3.2.0.
+
 ## 3.1.2 - 2026-09-18
 
 - Added per-user X and Facebook profile URL overrides in Edit Profile.

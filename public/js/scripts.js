@@ -29,11 +29,30 @@ $(function() {
 		}
 	});
 
-	$('#post-comment').hide();
-  $('#btn-comment').off('click');
-	$('#btn-comment').on('click', function(event) {
+	$('.post-comment').hide();
+	$('.comments-panel').each(function() {
+		var $commentsPanel = $(this);
+		var isVisible = $commentsPanel.hasClass('comments-visible');
+		$commentsPanel.find('.show-comments').attr('aria-expanded', isVisible ? 'true' : 'false');
+	});
+	$('.show-comments').off('click.comments');
+	$('.show-comments').on('click.comments', function(event) {
 		event.preventDefault();
-		$('#post-comment').toggle();
+		var $articleCard = $(this).closest('.article-card');
+		var $commentsPanel = $articleCard.length
+			? $articleCard.find('.comments-panel').first()
+			: $('.comments-panel').first();
+		var isVisible = $commentsPanel.toggleClass('comments-visible').hasClass('comments-visible');
+		$(this).attr('aria-expanded', isVisible ? 'true' : 'false');
+		$(this).find('i').toggleClass('fa-comments-o', !isVisible).toggleClass('fa-chevron-up', isVisible);
+		$(this).contents().filter(function() {
+			return this.nodeType === 3;
+		}).last().replaceWith(isVisible ? ' Hide comments' : ' View comments');
+	});
+	$('.btn-comment, #btn-comment').off('click');
+	$('.btn-comment, #btn-comment').on('click', function(event) {
+		event.preventDefault();
+		$(this).closest('.comments-panel').find('.post-comment').first().toggle();
 	});
 
   $('.prePublishButton').off('click');

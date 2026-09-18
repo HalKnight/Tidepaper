@@ -185,6 +185,37 @@ margin: 0;
 	padding: 14px 22px;
 }
 
+.article-actions {
+	align-items: center;
+	display: flex;
+	flex-wrap: nowrap;
+	gap: 6px;
+}
+
+.article-actions .btn {
+	flex: 0 0 auto;
+	white-space: nowrap;
+}
+
+.article-meta {
+	color: var(--muted);
+	font-size: 0.9rem;
+	line-height: 1.45;
+	margin-top: 8px;
+}
+
+.comments-panel {
+	display: none;
+}
+
+.comments-panel.comments-visible {
+	display: block;
+}
+
+.post-comment {
+	display: none;
+}
+
 .mainBlog {
 	min-width: 0;
 }

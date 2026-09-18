@@ -23,6 +23,7 @@ SOFTWARE.
 */
 var sidebar = require("../helpers/sidebar"),
   ArticleModel = require("../models").Article,
+  CommentModel = require("../models").Comment,
   UserModel = require("../models/user"),
   Tools = require("../server/tools.js"),
   SettingsModel = require("../models/settings"),
@@ -44,6 +45,35 @@ function isEmpty(value) {
     typeof value == "undefined" ||
     value === null
   );
+}
+
+function attachArticleComments(articles) {
+  if (!CommentModel || !articles.length) {
+    return Promise.resolve(articles);
+  }
+
+  var articleIds = articles.map(function(article) {
+    return article.articleID;
+  });
+
+  return CommentModel.find({
+    article_id: {
+      $in: articleIds
+    }
+  }).lean().exec().then(function(comments) {
+    var commentsByArticle = {};
+    (comments || []).forEach(function(comment) {
+      if (!commentsByArticle[comment.article_id]) {
+        commentsByArticle[comment.article_id] = [];
+      }
+      commentsByArticle[comment.article_id].push(comment);
+    });
+
+    articles.forEach(function(article) {
+      article.comments = commentsByArticle[article.articleID] || [];
+    });
+    return articles;
+  });
 }
 
 module.exports = {
@@ -125,7 +155,7 @@ module.exports = {
           });
 
           return articles;
-        });
+        }).then(attachArticleComments);
       }).then(function(articles) {
         var finishHome = function() {
           viewModel.articles = articles;
@@ -216,6 +246,9 @@ module.exports = {
         }
       });
 
+      return attachArticleComments(articles);
+    }).then(function(articles) {
+
       var finishUserHome = function() {
         viewModel.articles = articles;
         sidebar(viewModel, function(model) {
@@ -271,7 +304,7 @@ module.exports = {
           timestamp: -1
         }
       }
-    ).lean().exec().then(function(articles) {
+    ).lean().exec().then(attachArticleComments).then(function(articles) {
         if (!articles) {
           articles = [];
         }
@@ -333,7 +366,7 @@ module.exports = {
       },
       {},
       { sort: { timestamp: -1 } },
-    ).lean().exec().then(function(articles) {
+    ).lean().exec().then(attachArticleComments).then(function(articles) {
         articles = articles || [];
         articles.forEach(function(article) {
           if (article && article.timestamp) {

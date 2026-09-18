@@ -2,7 +2,7 @@
 
 Tidepaper is a server-rendered blog application built with Node.js, Express, MongoDB, Mongoose, Passport, and Handlebars.
 
-Current version: **3.1.2**
+Current version: **3.2.0**
 
 ## Features
 
@@ -11,6 +11,8 @@ Current version: **3.1.2**
 - Per-user X and Facebook profile links with site defaults for guests
 - First registered user is assigned administrator access
 - Article creation, editing, likes, comments, and deletion
+- Inline comments beneath articles with per-article expand and collapse controls
+- Compact article actions for Like, Comments, and View
 - Private articles visible only to their author and administrators
 - Comment moderation by comment owner, article owner, or administrator
 - Administrator dashboard, user management, and admin-created accounts
