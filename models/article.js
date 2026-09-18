@@ -49,6 +49,10 @@ var ArticleSchema = new Schema({
   userName: {
     type: String
   },
+  private: {
+    type: Boolean,
+    default: false
+  },
   blogbody: {
     type: String
   },

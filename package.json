@@ -1,6 +1,6 @@
 {
-  "name": "Lama",
-  "version": "3.0.0",
+  "name": "tidepaper",
+  "version": "3.1.0",
   "description": "A Blog powered by Node.js",
   "repository": {
     "type": "git",

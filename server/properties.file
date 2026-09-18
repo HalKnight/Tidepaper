@@ -20,8 +20,8 @@
 #SOFTWARE.
 
 [main]
-version = Powered by Lama version 3.0.0
-lamaTitle = Lama
+version = Powered by Tidepaper version 3.1.0
+lamaTitle = Tidepaper
 twitter = https://www.twitter.com/
 facebook = https://www.facebook.com/
 theme = readable

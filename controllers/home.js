@@ -63,31 +63,70 @@ module.exports = {
       };
     }
 
-    ArticleModel.find(
-      {},
+    var articleQuery = {
+      $or: [
+        { private: { $ne: true } }
+      ]
+    };
+    return ArticleModel.find(
+      articleQuery,
       {},
       {
         sort: {
           timestamp: -1
         }
-      },
-      ).lean().exec().then(function(articles) {
+      }
+    ).lean().exec().then(function(articles) {
         if (!articles) {
           articles = [];
         }
 
-        articles.forEach(element => {
-          if (element && element.timestamp) {
-            element.timestamp =
-              element.timestamp.getMonth() +
-              1 +
-              "/" +
-              element.timestamp.getDate() +
-              "/" +
-              element.timestamp.getFullYear();
-          }
-        });
+        var userEmails = articles
+          .filter(function(article) {
+            return article && article.userID;
+          })
+          .map(function(article) {
+            return String(article.userID).trim().toLowerCase();
+          });
 
+        var userNameMap = {};
+        var populateUserNames = userEmails.length
+          ? UserModel.find({
+              "local.email": {
+                $in: userEmails
+              }
+            }).lean().exec().then(function(users) {
+              users = users || [];
+              users.forEach(function(user) {
+                if (user && user.local && user.local.email) {
+                  userNameMap[String(user.local.email).trim().toLowerCase()] = user.local.name || user.local.email;
+                }
+              });
+              return true;
+            })
+          : Promise.resolve(true);
+
+        return populateUserNames.then(function() {
+          articles.forEach(function(element) {
+            if (element && element.timestamp) {
+              element.timestamp =
+                element.timestamp.getMonth() +
+                1 +
+                "/" +
+                element.timestamp.getDate() +
+                "/" +
+                element.timestamp.getFullYear();
+            }
+
+            if (element && element.userID) {
+              var key = String(element.userID).trim().toLowerCase();
+              element.userName = userNameMap[key] || element.userName || element.userID;
+            }
+          });
+
+          return articles;
+        });
+      }).then(function(articles) {
         var finishHome = function() {
           viewModel.articles = articles;
           sidebar(viewModel, function(viewModel) {
@@ -114,6 +153,97 @@ module.exports = {
       });
   },
 
+  userHome: function(req, res) {
+    var viewModel;
+    var userId = String(req.params.user_id || "").trim();
+
+    if (!userId) {
+      return res.redirect("/home");
+    }
+
+    if (req.isAuthenticated()) {
+      viewModel = {
+        articles: {},
+        user: {},
+        layout: "user",
+        userHome: {
+          email: userId
+        },
+        lama: {}
+      };
+    } else {
+      viewModel = {
+        articles: {},
+        userHome: {
+          email: userId
+        },
+        lama: {}
+      };
+    }
+
+    return UserModel.findOne({
+      "local.email": userId
+    }).lean().exec().then(function(user) {
+      if (user && user.local && user.local.name) {
+        viewModel.userHome.name = user.local.name;
+      }
+
+      return ArticleModel.find(
+        {
+          userID: userId
+        },
+        {},
+        {
+          sort: {
+            timestamp: -1
+          }
+        }
+      ).lean().exec();
+    }).then(function(articles) {
+      if (!articles) {
+        articles = [];
+      }
+
+      articles.forEach(function(element) {
+        if (element && element.timestamp) {
+          element.timestamp =
+            element.timestamp.getMonth() +
+            1 +
+            "/" +
+            element.timestamp.getDate() +
+            "/" +
+            element.timestamp.getFullYear();
+        }
+      });
+
+      var finishUserHome = function() {
+        viewModel.articles = articles;
+        sidebar(viewModel, function(model) {
+          Tools.getSettings(model, res, "home");
+        });
+      };
+
+      if (!isEmpty(req.user)) {
+        return new Promise(function(resolve, reject) {
+          Tools.loadCurrentUser(req, function(err, user) {
+            if (err) {
+              console.error("User home user lookup failed:", err);
+              return reject(new Error("User home user lookup failed"));
+            }
+            viewModel.user = user;
+            finishUserHome();
+            resolve();
+          });
+        });
+      }
+
+      finishUserHome();
+    }).catch(function(err) {
+      console.error("User home article lookup failed:", err);
+      return res.redirect("/home");
+    });
+  },
+
   author: function(req, res) {
     var viewModel;
     if (req.isAuthenticated()) {
@@ -132,15 +262,16 @@ module.exports = {
 
     ArticleModel.find(
       {
-        userName: new RegExp(req.params.article_id, "i")
+        userName: new RegExp(req.params.article_id, "i"),
+        private: { $ne: true }
       },
       {},
       {
         sort: {
           timestamp: -1
         }
-      },
-      ).lean().exec().then(function(articles) {
+      }
+    ).lean().exec().then(function(articles) {
         if (!articles) {
           articles = [];
         }
@@ -197,11 +328,12 @@ module.exports = {
         timestamp: {
           $gte: startDate,
           $lt: endDate
-        }
+        },
+        private: { $ne: true }
       },
       {},
       { sort: { timestamp: -1 } },
-      ).lean().exec().then(function(articles) {
+    ).lean().exec().then(function(articles) {
         articles = articles || [];
         articles.forEach(function(article) {
           if (article && article.timestamp) {

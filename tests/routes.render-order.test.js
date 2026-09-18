@@ -204,4 +204,187 @@ describe('route rendering/user lookup timing', function() {
     expect(renderCalls[0].view).to.equal('editProfileAdmin');
     expect(renderCalls[0].model.userAdmin.local.email).to.equal('alice@example.com');
   });
+
+  it('renders only that user\'s articles on the user home page', async function() {
+    const renderCalls = [];
+    const req = {
+      params: { user_id: 'alice@example.com' },
+      isAuthenticated: () => false,
+      user: null,
+      flash: () => []
+    };
+    const res = {
+      render: function(view, model) {
+        renderCalls.push({ view, model });
+      },
+      redirect: function(url) {
+        throw new Error('redirect called unexpectedly: ' + url);
+      },
+      status: function() { return this; },
+      send: function() {}
+    };
+
+    const homeModule = proxyquire('../controllers/home', {
+      '../models': {
+        Article: {
+          find: function(query) {
+            expect(query.userID).to.equal('alice@example.com');
+            return {
+              lean: function() {
+                return {
+                  exec: function() {
+                    return Promise.resolve([
+                      { title: 'Alice post', userID: 'alice@example.com', userName: 'Alice', timestamp: new Date('2025-01-02T00:00:00Z') }
+                    ]);
+                  }
+                };
+              }
+            };
+          }
+        }
+      },
+      '../models/user': {
+        findOne: function(query) {
+          expect(query['local.email']).to.equal('alice@example.com');
+          return {
+            lean: function() {
+              return {
+                exec: function() {
+                  return Promise.resolve({ local: { email: 'alice@example.com', name: 'Alice' } });
+                }
+              };
+            }
+          };
+        },
+        find: function(query) {
+          return {
+            lean: function() {
+              return {
+                exec: function() {
+                  return Promise.resolve([
+                    { local: { email: 'alice@example.com', name: 'Alice' } }
+                  ]);
+                }
+              };
+            }
+          };
+        }
+      },
+      '../server/tools.js': {
+        getSettings: function(viewModel, response, page) {
+          response.render(page, viewModel);
+        },
+        loadCurrentUser: function(request, callback) {
+          callback(null, { local: { email: 'alice@example.com', name: 'Alice' } });
+        }
+      },
+      '../helpers/sidebar': function(viewModel, callback) {
+        callback(viewModel);
+      },
+      'properties-reader': function() {
+        return {
+          get: function(key) {
+            return {
+              'main.lamaTitle': 'Lama',
+              'main.version': '2.0.0',
+              'main.twitter': '@lama',
+              'main.facebook': 'facebook',
+              'admin.settingsID': 'settings-1'
+            }[key];
+          }
+        };
+      }
+    });
+
+    await homeModule.userHome(req, res);
+
+    expect(renderCalls.length).to.equal(1);
+    expect(renderCalls[0].view).to.equal('home');
+    expect(renderCalls[0].model.articles).to.have.lengthOf(1);
+    expect(renderCalls[0].model.articles[0].userID).to.equal('alice@example.com');
+    expect(renderCalls[0].model.userHome.name).to.equal('Alice');
+  });
+
+  it('renders friendly author names on the main home page', async function() {
+    const renderCalls = [];
+    const req = {
+      isAuthenticated: () => false,
+      user: null,
+      flash: () => []
+    };
+    const res = {
+      render: function(view, model) {
+        renderCalls.push({ view, model });
+      },
+      redirect: function(url) {
+        throw new Error('redirect called unexpectedly: ' + url);
+      },
+      status: function() { return this; },
+      send: function() {}
+    };
+
+    const homeModule = proxyquire('../controllers/home', {
+      '../models': {
+        Article: {
+          find: function() {
+            return {
+              lean: function() {
+                return {
+                  exec: function() {
+                    return Promise.resolve([
+                      { title: 'Hello', userID: 'alice@example.com', userName: 'alice@example.com', timestamp: new Date('2025-01-02T00:00:00Z') }
+                    ]);
+                  }
+                };
+              }
+            };
+          }
+        }
+      },
+      '../models/user': {
+        find: function() {
+          return {
+            lean: function() {
+              return {
+                exec: function() {
+                  return Promise.resolve([
+                    { local: { email: 'alice@example.com', name: 'Alice' } }
+                  ]);
+                }
+              };
+            }
+          };
+        }
+      },
+      '../server/tools.js': {
+        getSettings: function(viewModel, response, page) {
+          response.render(page, viewModel);
+        },
+        loadCurrentUser: function(request, callback) {
+          callback(null, { local: { email: 'alice@example.com', name: 'Alice' } });
+        }
+      },
+      '../helpers/sidebar': function(viewModel, callback) {
+        callback(viewModel);
+      },
+      'properties-reader': function() {
+        return {
+          get: function(key) {
+            return {
+              'main.lamaTitle': 'Lama',
+              'main.version': '2.0.0',
+              'main.twitter': '@lama',
+              'main.facebook': 'facebook',
+              'admin.settingsID': 'settings-1'
+            }[key];
+          }
+        };
+      }
+    });
+
+    await homeModule.index(req, res);
+
+    expect(renderCalls.length).to.equal(1);
+    expect(renderCalls[0].model.articles[0].userName).to.equal('Alice');
+  });
 });

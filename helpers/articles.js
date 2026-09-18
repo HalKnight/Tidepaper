@@ -25,7 +25,11 @@ var models = require('../models');
 
 module.exports = {
     popular: function(callback) {
-        models.Article.find({}, {}, { limit: 9, sort: { likes: -1 }}).lean().exec()
+        models.Article.find(
+            { private: { $ne: true } },
+            {},
+            { limit: 9, sort: { likes: -1 }}
+        ).lean().exec()
             .then(function(articles) {
                 callback(null, articles || []);
             })

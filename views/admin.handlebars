@@ -26,6 +26,7 @@ SOFTWARE. -->
 		<h1>
 			<span class="fa"></span> Users
 		</h1>
+		<a class="btn btn-primary btn-xs" href="/admin/users/new">Create user</a>
 	</div>
 	{{#each users}}
 	<div class="row">
@@ -33,6 +34,10 @@ SOFTWARE. -->
       <div style="float: left">
 				<a class="btn btn-primary btn-xs"
 					href="/editProfileAdmin/{{ local.email }}">Edit</a>
+				<a class="btn btn-primary btn-xs"
+					href="/users/{{ local.email }}">View posts</a>
+				<a class="btn btn-primary btn-xs"
+					href="/home">All posts</a>
 			</div>
 			<div style="float: left; margin-left: 4px">
 				<form action="/admin/users/delete" method="post" style="display: inline;"

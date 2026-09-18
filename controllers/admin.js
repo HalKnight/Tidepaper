@@ -46,6 +46,28 @@ function isEmpty(value) {
 }
 
 module.exports = {
+  createUserForm: function(req, res) {
+    var viewModel = {
+      user: {},
+      adminCreate: true,
+      layout: "auth",
+      stats: {
+        stat: true
+      },
+      message: req.flash("error"),
+      lama: {}
+    };
+
+    Tools.loadCurrentUser(req, function(err, user) {
+      if (err) {
+        console.error("Admin create user lookup failed:", err);
+        return res.redirect("/admin");
+      }
+      viewModel.user = user;
+      Tools.getSettings(viewModel, res, "signup");
+    });
+  },
+
   index: function(req, res) {
     var viewModel = { user: {}, lama: {} };
     if (req.isAuthenticated() && req.user.local.admin) {

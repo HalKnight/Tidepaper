@@ -31,34 +31,32 @@ SOFTWARE. -->
 <link rel="stylesheet" type="text/css" href="/public/css/styles.css">
 <link rel="stylesheet" type="text/css" href="/public/css/editor.css">
 </head>
-<body>
-	<div>
+
+<body class="theme-{{theme}}">
+	<header class="app-header">
 		<div class="container">
-			<div class="col-md-12 text-center">
-				<h1>{{lama.header}}</h1>
-				<button class="hamburger" style="display: block; float: right"
-					title="show/hide Stats">&#9776;</button>
+			<div class="app-bar">
+				<a class="app-brand" href="/home">{{lama.header}}</a>
+				<button class="hamburger" title="Show or hide the sidebar" aria-label="Show or hide the sidebar">&#9776;</button>
 			</div>
-			<div class="col-md-12 text-center">
-				<div style="float: left">
-					<a class="btn btn-primary btn-xs" href="/home">Home</a>
-				</div>
-				<div style="float: left">
-					<a class="btn btn-primary btn-xs" href="/login">Login</a>
-				</div>
-			</div>
+			<nav class="app-nav" aria-label="Main navigation">
+				<a class="btn btn-primary btn-xs" href="/home">Home</a>
+				<a class="btn btn-primary btn-xs" href="/login">Login</a>
+			</nav>
 		</div>
-	</div>
-	<div style="border-top: solid 1px #eee; padding-top: 1em;">
+	</header>
+	<main class="app-content">
 		<div class="container">
+			</head>
+			<body class="theme-{{theme}}">
 			<div class="row">
-				<div class="col-sm-12 mainBlog">{{{body}}}</div>
+				<div class="col-sm-8 mainBlog">{{{body}}}</div>
 				<div class="col-sm-4 stats">{{> popular this
 					}} {{> comments this }} {{> searchByAuthor this }} {{> searchByDate this }}</div>
 			</div>
 		</div>
-	</div>
-	<div style="border-top: solid 1px #eee; padding-top: 1em;">
+	</main>
+	<footer class="app-footer">
 		<div class="container">
 			<div class="row">
 				<div class="col-sm-12 text-center">
@@ -72,7 +70,7 @@ SOFTWARE. -->
 				</div>
 			</div>
 		</div>
-	</div>
+	</footer>
   <!-- Search-Modal -->
 <div class="modal fade" id="searchArticlesModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">

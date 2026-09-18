@@ -31,49 +31,37 @@ SOFTWARE. -->
 <link rel="stylesheet" type="text/css" href="/public/css/styles.css">
 <link rel="stylesheet" type="text/css" href="/public/css/editor.css">
 </head>
-<body>
-	<div>
+
+<body class="theme-{{theme}}">
+	<header class="app-header">
 		<div class="container">
-			<div class="col-md-12 text-center">
-				<h1>{{lama.header}}</h1>
+			<div class="app-bar">
+				<a class="app-brand" href="/home">{{lama.header}}</a>
 				{{#unless stats.stat}}
-				<button class="hamburger" style="display: block; float: right"
-					title='show/hide Stats'>&#9776;</button>
+				<button class="hamburger" title="Show or hide the sidebar" aria-label="Show or hide the sidebar">&#9776;</button>
 				{{/unless}}
 			</div>
-			<div class="col-md-12 text-center">
-				<div style="float: left">
-					<a class="btn btn-primary btn-xs homeButton" href="/home">Home</a>
-				</div>
-				<div style="float: left">
-					<a class="btn btn-primary btn-xs newArticleButton"
-						href="/newArticle">Create</a>
-				</div>
-				<div style="float: left">
-					<a class="btn btn-primary btn-xs" href="/profile">Profile</a>
-				</div>
+			<nav class="app-nav" aria-label="Main navigation">
+				<a class="btn btn-primary btn-xs homeButton" href="/home">Home</a>
+				<a class="btn btn-primary btn-xs newArticleButton" href="/newArticle">Create</a>
+				<a class="btn btn-primary btn-xs" href="/profile">Profile</a>
+				<a class="btn btn-primary btn-xs" href="/users/{{user.local.email}}">My Posts</a>
 				{{#if user.local.admin}}
-				<div style="float: left">
-					<a class="btn btn-primary btn-xs" href="/admin">Admin </a>
-				</div>
-				<div style="float: left">
-					<a class="btn btn-primary btn-xs" href="/settings">Settings </a>
-				</div>
+				<a class="btn btn-primary btn-xs" href="/admin">Admin</a>
+				<a class="btn btn-primary btn-xs" href="/settings">Settings</a>
 				{{/if}}
-				<div style="float: left">
-					<form action="/logout" method="post" style="display: inline;">
-						<input type="hidden" name="_csrf" value="{{csrfToken}}">
-						<button class="btn btn-primary btn-xs" type="submit">Logout</button>
-					</form>
-				</div>
-			</div>
+				<form action="/logout" method="post">
+					<input type="hidden" name="_csrf" value="{{csrfToken}}">
+					<button class="btn btn-primary btn-xs" type="submit">Logout</button>
+				</form>
+			</nav>
 		</div>
-	</div>
-	<div style="border-top: solid 1px #eee; padding-top: 1em;">
+	</header>
+	<main class="app-content">
 		<div class="container">
 			<div class="row">
 				{{#unless stats.stat}}
-				<div class="col-sm-12 mainBlog">{{{body}}}</div>
+				<div class="col-sm-8 mainBlog">{{{body}}}</div>
 				<div class="col-sm-4 stats">{{> stats this }} {{> popular this
 					}} {{> comments this }} {{> searchByAuthor this }} {{> searchByDate this }}</div>
 				{{/unless}} {{#if stats.stat}}
@@ -81,8 +69,8 @@ SOFTWARE. -->
 				{{/if}}
 			</div>
 		</div>
-	</div>
-	<div style="border-top: solid 1px #eee; padding-top: 1em;">
+	</main>
+	<footer class="app-footer">
 		<div class="container">
 			<div class="row">
 				<div class="col-sm-12 text-center">
@@ -96,7 +84,7 @@ SOFTWARE. -->
 				</div>
 			</div>
 		</div>
-	</div>
+	</footer>
   <!-- Search-Modal -->
 <div class="modal fade" id="searchArticlesModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
