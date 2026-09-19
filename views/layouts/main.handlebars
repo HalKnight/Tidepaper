@@ -22,6 +22,8 @@ SOFTWARE. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{lama.header}}</title> 
 <meta name="csrf-token" content="{{csrfToken}}">
 {{#each styleSheet}}
@@ -34,7 +36,7 @@ SOFTWARE. -->
 <noscript><link rel="stylesheet" href="{{{themeFontUrl theme}}}"></noscript>
 {{/if}}
 <link href="/public/css/font-awesome.css" rel="stylesheet">
-<link rel="stylesheet" type="text/css" href="/public/css/styles.css?v=3.6.1">
+<link rel="stylesheet" type="text/css" href="/public/css/styles.css?v=3.6.2">
 <link rel="stylesheet" type="text/css" href="/public/css/editor.css">
 </head>
 
@@ -43,9 +45,12 @@ SOFTWARE. -->
 		<div class="container">
 			<div class="app-bar">
 				<a class="app-brand" href="{{lama.tidepaperUrl}}">{{#if lama.tidepaperIconUrl}}<img class="tp-image-logo" src="{{lama.tidepaperIconUrl}}" alt="Tidepaper">{{else}}<span class="tp-logo" aria-hidden="true">TP</span>{{/if}}{{lama.header}}</a>
-				<button class="hamburger" type="button" title="Show or hide the sidebar" aria-label="Show or hide the sidebar" aria-expanded="true">&#9776;</button>
+				<div class="app-bar-actions">
+					<button class="nav-toggle" type="button" title="Show or hide the menu" aria-label="Show or hide the menu" aria-expanded="false" aria-controls="appNav">&#9776;</button>
+					<button class="hamburger" type="button" title="Show or hide the sidebar" aria-label="Show or hide the sidebar" aria-expanded="true">&#9776;</button>
+				</div>
 			</div>
-			<nav class="app-nav" aria-label="Main navigation">
+			<nav class="app-nav" id="appNav" aria-label="Main navigation">
 				<a class="btn btn-primary btn-xs" href="/home">Home</a>
 				<a class="btn btn-primary btn-xs" href="/login">Login</a>
 			</nav>
@@ -97,7 +102,7 @@ SOFTWARE. -->
   </div>
 </div>
 	<script src="/public/js/jquery-3.2.1.js"></script>
-	<script type="text/javascript" src="/public/js/scripts.js?v=3.6.1"></script>
+	<script type="text/javascript" src="/public/js/scripts.js?v=3.6.2"></script>
 	<script type="text/javascript" src="/public/js/bootstrap.js"></script>
 	<script type="text/javascript" src="/public/js/editor.js"></script>
   <script>

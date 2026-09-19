@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.6.2 - 2026-09-19
+
+- Added a mobile viewport meta tag to all layouts so responsive CSS now applies on phones instead of the page being rendered at desktop width and zoomed out.
+- Consolidated the top main menu into a collapsible dropdown behind a menu toggle button in mobile view, keeping the full inline menu on larger screens.
+- Updated shared asset cache versions and project documentation for the 3.6.2 release.
+
 ## 3.6.1 - 2026-09-18
 
 - Added pagination to the home article feed (20 per page) instead of loading every public article on every request.

@@ -66,6 +66,15 @@ h1, h2, h3, h4, .h1, .h2, .h3, .h4 {
 	line-height: 1;
 }
 
+.app-bar-actions {
+	display: flex;
+	gap: 8px;
+}
+
+.nav-toggle {
+	display: none;
+}
+
 .app-nav {
 	display: flex;
 	flex-wrap: wrap;
@@ -440,7 +449,8 @@ select.input-sm {
 	box-shadow: none;
 }
 
-.hamburger {
+.hamburger,
+.nav-toggle {
 	background: var(--paper);
 	border: 1px solid var(--line);
 	border-radius: 4px;
@@ -473,9 +483,24 @@ select.input-sm {
 		font-size: 25px;
 	}
 
+	.nav-toggle {
+		display: inline-block;
+	}
+
+	.app-nav {
+		display: none;
+		flex-direction: column;
+		flex-wrap: nowrap;
+	}
+
+	.app-nav.nav-open {
+		display: flex;
+	}
+
 	.app-nav .btn,
 	.app-nav form {
 		flex: 1 1 auto;
+		width: 100%;
 	}
 
 	.app-nav .btn {

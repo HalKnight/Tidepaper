@@ -130,6 +130,14 @@ $(function() {
 				$(this).attr('aria-expanded', $stats.hasClass('sidebar-hidden') ? 'false' : 'true');
 			});
 
+	var $appNav = $('.app-nav');
+	$('.nav-toggle').off('click.navToggle').on('click.navToggle',
+			function(event) {
+				event.preventDefault();
+				$appNav.toggleClass('nav-open');
+				$(this).attr('aria-expanded', $appNav.hasClass('nav-open') ? 'true' : 'false');
+			});
+
   $('#btn-like').off('click');
 	$('#btn-like').on('click', function(event) {
 		event.preventDefault();

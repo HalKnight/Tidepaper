@@ -26,7 +26,7 @@ var UserModel = require("../models/user");
 var MessageModel = require("../models/message");
 var css = [
   {
-    css: "/public/css/readable.css?v=3.6.1"
+    css: "/public/css/readable.css?v=3.6.2"
   }
 ];
 var PropertiesReaderModule = require("properties-reader");
@@ -194,7 +194,7 @@ module.exports = {
 
           css = [
             {
-              css: "/public/css/" + settings.theme + ".css?v=3.6.1"
+              css: "/public/css/" + settings.theme + ".css?v=3.6.2"
             }
           ];
 
