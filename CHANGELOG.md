@@ -1,5 +1,18 @@
 # Changelog
 
+## 3.6.6 - 2026-09-19
+
+- The sidebar (Most Popular, Latest Comments, Search by Author/Date) is now collapsed by default in mobile view instead of stacking beneath the main content. Opening it with the menu button now takes over the screen as an overlay, hiding the main content, instead of both being shown at once. Desktop behavior (sidebar visible by default, collapsible to expand the main content) is unchanged.
+- Updated shared asset cache versions for the 3.6.6 release.
+
+## 3.6.5 - 2026-09-19
+
+- Removed the duplicate `<!DOCTYPE html>`/`<html>`/`<head>`/`<body>` document markup that `login.handlebars` and `signup.handlebars` rendered inside the `auth` layout's own document, along with a dead, unused inline script left over from the old standalone pages. The login and signup forms are now centered directly by the shared `auth` layout instead of by their own nested container markup.
+
+## 3.6.4 - 2026-09-19
+
+- Fixed the login, home, and settings pages checking a nonexistent `messages` template variable instead of `message`, which meant flash error banners (wrong password, "No user found", session-expired CSRF retries, etc.) never rendered. A failed login previously appeared to silently do nothing instead of showing why it didn't proceed to `/home`.
+
 ## 3.6.3 - 2026-09-19
 
 - Fixed intermittent "Invalid CSRF token" failures when logging back in (or resubmitting the messages, settings, article, or profile forms) after the session had expired or been evicted between loading the form and submitting it. A CSRF mismatch now flashes a friendly message and redirects back to a fresh copy of the form (which carries a newly issued, matching token) instead of dead-ending on a raw 403 response.

@@ -19,51 +19,31 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<!DOCTYPE html>
-<html>
-<head>
-<title>Node Authentication</title>
-<style>
-body {
-	padding-top: 80px;
-}
-</style>
-</head>
-<body>
-	<div class="container">
+<h1>
+	<span class="fa fa-sign-in"></span> Login
+</h1>
 
-		<div class="col-sm-6 col-sm-offset-3">
+{{#if message}}
+<div class="alert alert-danger">{{message}}</div>
+{{/if}}
 
-			<h1>
-				<span class="fa fa-sign-in"></span> Login
-			</h1>
-
-			{{#if messages}}
-			<div class="alert alert-danger">{{message}}</div>
-			{{/if}}
-
-			<form action="/login" method="post">
-				<input type="hidden" name="_csrf" value="{{csrfToken}}">
-				<div class="form-group">
-					<label>Email</label> <input type="text" class="form-control"
-						name="email">
-				</div>
-				<div class="form-group">
-					<label>Password</label> <input type="password" class="form-control"
-						name="password">
-				</div>
-
-				<button type="submit" class="btn btn-warning btn-lg">Login</button>
-			</form>
-
-			<hr>
-			{{#unless noSignup}}
-			<p>
-				Need an account? <a href="/signup">Signup</a>
-			</p>
-			{{/unless}}
-		</div>
-
+<form action="/login" method="post">
+	<input type="hidden" name="_csrf" value="{{csrfToken}}">
+	<div class="form-group">
+		<label>Email</label> <input type="text" class="form-control"
+			name="email">
 	</div>
-</body>
-</html>
+	<div class="form-group">
+		<label>Password</label> <input type="password" class="form-control"
+			name="password">
+	</div>
+
+	<button type="submit" class="btn btn-warning btn-lg">Login</button>
+</form>
+
+<hr>
+{{#unless noSignup}}
+<p>
+	Need an account? <a href="/signup">Signup</a>
+</p>
+{{/unless}}

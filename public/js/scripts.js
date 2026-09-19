@@ -119,10 +119,19 @@ $(function() {
 
 	var $stats = $('.stats');
 	var $mainBlog = $('div.mainBlog');
+	var $sidebarRow = $mainBlog.closest('.row');
+	var mobileSidebarQuery = window.matchMedia('(max-width: 767px)');
+	$('.hamburger').attr('aria-expanded', mobileSidebarQuery.matches ? 'false' : 'true');
 	$('.hamburger').off('click.hamburger').on('click.hamburger',
 			function(event) {
 				event.preventDefault();
 				if (!$stats.length) {
+					return;
+				}
+				if (mobileSidebarQuery.matches) {
+					var opening = !$sidebarRow.hasClass('sidebar-open');
+					$sidebarRow.toggleClass('sidebar-open', opening);
+					$(this).attr('aria-expanded', opening ? 'true' : 'false');
 					return;
 				}
 				$mainBlog.toggleClass('col-sm-8');

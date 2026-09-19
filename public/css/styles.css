@@ -522,6 +522,21 @@ select.input-sm {
 		margin-top: 24px;
 	}
 
+	/* Sidebar is collapsed by default on mobile; opening it takes over the
+	   screen instead of stacking beneath the main content. */
+	.stats {
+		display: none;
+	}
+
+	.row.sidebar-open .stats {
+		display: block;
+		margin-top: 0;
+	}
+
+	.row.sidebar-open .mainBlog {
+		display: none;
+	}
+
 	.message-list-row {
 		align-items: flex-start;
 		flex-direction: column;

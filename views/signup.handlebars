@@ -19,72 +19,42 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<!DOCTYPE html>
-<html>
-<head>
-<title>Node Authentication</title>
-<style>
-body {
-	padding-top: 80px;
-}
-</style>
-</head>
-<body>
-	<div class="container">
+<h1>
+	<span class="fa fa-sign-in"></span> {{#if adminCreate}}Create user{{else}}Signup{{/if}}
+</h1>
 
-		<div class="col-sm-6 col-sm-offset-3">
+{{#if message}}
+<div class="alert alert-danger">{{message}}</div>
+{{/if}}
 
-			<h1>
-				<span class="fa fa-sign-in"></span> {{#if adminCreate}}Create user{{else}}Signup{{/if}}
-			</h1>
-
-			{{#if message}}
-			<div class="alert alert-danger">{{message}}</div>
-			{{/if}}
-
-			<form action="{{#if adminCreate}}/admin/users/create{{else}}/signup{{/if}}" method="post" data-toggle="validator">
-				<input type="hidden" name="_csrf" value="{{csrfToken}}">
-				<div class="form-group">
-					<label>Email</label> <input
-						pattern="(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|&#34;(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*&#34;
-						)@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"
-						type="text" class="form-control" name="email">
-				</div>
-				<div class="form-group">
-					<label>Password</label> <input type="password" class="form-control"
-						name="password">
-				</div>
-				<div class="form-group">
-					<label>Author Name</label> <input type="text" class="form-control"
-						name="name">
-				</div>
-				
-				<button type="submit" class="btn btn-warning btn-lg">{{#if adminCreate}}Create user{{else}}Signup{{/if}}</button>
-				
-			</form>
-
-			<hr>
-
-			{{#unless adminCreate}}
-			<p>
-				Already have an account? <a href="/login">Login</a>
-			</p>
-			<p>
-				Or go <a href="/">home</a>.
-			</p>
-			{{/unless}}
-
-		</div>
+<form action="{{#if adminCreate}}/admin/users/create{{else}}/signup{{/if}}" method="post" data-toggle="validator">
+	<input type="hidden" name="_csrf" value="{{csrfToken}}">
+	<div class="form-group">
+		<label>Email</label> <input
+			pattern="(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|&#34;(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*&#34;
+			)@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"
+			type="text" class="form-control" name="email">
 	</div>
-	<script>
-		function messageLength(value) {
-			if (value.length > 0) {
-				return true;
-			} else {
-				return false;
-			}
-		}
-		var messages = false;
-	</script>
-</body>
-</html>
+	<div class="form-group">
+		<label>Password</label> <input type="password" class="form-control"
+			name="password">
+	</div>
+	<div class="form-group">
+		<label>Author Name</label> <input type="text" class="form-control"
+			name="name">
+	</div>
+	
+	<button type="submit" class="btn btn-warning btn-lg">{{#if adminCreate}}Create user{{else}}Signup{{/if}}</button>
+	
+</form>
+
+<hr>
+
+{{#unless adminCreate}}
+<p>
+	Already have an account? <a href="/login">Login</a>
+</p>
+<p>
+	Or go <a href="/">home</a>.
+</p>
+{{/unless}}
