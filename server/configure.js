@@ -25,6 +25,7 @@ var path = require("path"),
   crypto = require("crypto"),
   fs = require("fs"),
   routes = require("./routes"),
+  Tools = require("./tools.js"),
   exphbs = require("express-handlebars"),
   express = require("express"),
   bodyParser = require("body-parser"),
@@ -194,7 +195,7 @@ module.exports = function(app) {
     var submittedToken = req.body && req.body._csrf || req.get("x-csrf-token");
     var expectedToken = req.session && req.session.csrfToken;
     if (!submittedToken || !expectedToken || submittedToken !== expectedToken) {
-      return res.status(403).send("Invalid CSRF token.");
+      return Tools.handleInvalidCsrf(req, res, "/login");
     }
     next();
   });

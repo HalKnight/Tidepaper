@@ -104,6 +104,35 @@ function cachedCount(key, queryFn) {
 }
 
 module.exports = {
+  // A session's CSRF token can legitimately go missing between a form being
+  // rendered and being submitted (idle session expiry/eviction, a stale tab,
+  // etc.). Rather than dead-ending on a raw 403, send the user back to a
+  // fresh copy of the form - which carries a newly issued, matching token -
+  // instead of the equivalent of a raw 403 error.
+  handleInvalidCsrf: function(req, res, fallbackPath) {
+    var message = "Your session has expired. Please try again.";
+    if (req.xhr || /json/i.test(req.get("accept") || "")) {
+      return res.status(403).json({ error: message });
+    }
+
+    req.flash("error", message);
+
+    var redirectTo = fallbackPath || "/";
+    var referer = req.get("Referer");
+    if (referer) {
+      try {
+        var refererUrl = new URL(referer);
+        if (refererUrl.host === req.get("host")) {
+          redirectTo = refererUrl.pathname + refererUrl.search;
+        }
+      } catch (err) {
+        // Ignore an unparsable Referer and use the fallback path.
+      }
+    }
+
+    return res.redirect(redirectTo);
+  },
+
   loadCurrentUser: function(req, callback) {
     if (!req || !req.user || !req.user.local || !req.user.local.email) {
       return callback(null, {});

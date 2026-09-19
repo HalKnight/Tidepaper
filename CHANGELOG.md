@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.6.3 - 2026-09-19
+
+- Fixed intermittent "Invalid CSRF token" failures when logging back in (or resubmitting the messages, settings, article, or profile forms) after the session had expired or been evicted between loading the form and submitting it. A CSRF mismatch now flashes a friendly message and redirects back to a fresh copy of the form (which carries a newly issued, matching token) instead of dead-ending on a raw 403 response.
+
 ## 3.6.2 - 2026-09-19
 
 - Added a mobile viewport meta tag to all layouts so responsive CSS now applies on phones instead of the page being rendered at desktop width and zoomed out.

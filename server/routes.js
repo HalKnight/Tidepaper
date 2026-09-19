@@ -140,13 +140,16 @@ function uploadMessageAttachment(req, res, next) {
 }
 function validateMessageCsrf(req, res, next) {
   if (!req.body || req.body._csrf !== req.session.csrfToken) {
-    return res.status(403).send("Invalid CSRF token.");
+    return Tools.handleInvalidCsrf(req, res, "/messages/compose");
   }
   next();
 }
 function validateArticleCsrf(req, res, next) {
   if (!req.body || req.body._csrf !== req.session.csrfToken) {
-    return res.status(403).send("Invalid CSRF token.");
+    var fallback = req.params && req.params.article_id
+      ? "/articles/" + req.params.article_id
+      : "/newArticle";
+    return Tools.handleInvalidCsrf(req, res, fallback);
   }
   next();
 }
@@ -163,13 +166,13 @@ function uploadSettingsIcon(req, res, next) {
 }
 function validateSettingsCsrf(req, res, next) {
   if (!req.body || req.body._csrf !== req.session.csrfToken) {
-    return res.status(403).send("Invalid CSRF token.");
+    return Tools.handleInvalidCsrf(req, res, "/settings");
   }
   next();
 }
 function validateProfileCsrf(req, res, next) {
   if (!req.body || req.body._csrf !== req.session.csrfToken) {
-    return res.status(403).send("Invalid CSRF token.");
+    return Tools.handleInvalidCsrf(req, res, "/editProfile");
   }
   next();
 }
