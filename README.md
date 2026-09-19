@@ -2,7 +2,7 @@
 
 Tidepaper is a server-rendered blog application built with Node.js, Express, MongoDB, Mongoose, Passport, and Handlebars.
 
-Current version: **3.6.6**
+Current version: **3.6.7**
 
 ## Features
 

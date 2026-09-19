@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.6.7 - 2026-09-19
+
+- Sent `Cache-Control: no-store` (plus `Pragma`/`Expires`) on every dynamic page response. Pages such as `/login` embed a session-specific CSRF token, and a browser or intermediate proxy that cached one of these pages (common on some mobile browsers) kept replaying the same stale, mismatched token on every reload, producing repeated "Your session has expired" retries that never resolved. Static assets under `/public/` are unaffected and keep their long-lived cache headers.
+
 ## 3.6.6 - 2026-09-19
 
 - The sidebar (Most Popular, Latest Comments, Search by Author/Date) is now collapsed by default in mobile view instead of stacking beneath the main content. Opening it with the menu button now takes over the screen as an overlay, hiding the main content, instead of both being shown at once. Desktop behavior (sidebar visible by default, collapsible to expand the main content) is unchanged.

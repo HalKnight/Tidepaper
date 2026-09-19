@@ -110,6 +110,17 @@ module.exports = function(app) {
     }
   }));
 
+  // Every other response embeds a session-specific CSRF token, so a browser or
+  // intermediate proxy caching one of these pages (e.g. an aggressively
+  // caching mobile browser) would keep replaying a stale, now-mismatched
+  // token no matter how many times the page is reloaded.
+  app.use(function(req, res, next) {
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.set("Pragma", "no-cache");
+    res.set("Expires", "0");
+    next();
+  });
+
   var isProduction = app.get("env") === "production";
   var localPropertiesPath = path.join(__dirname, "properties.local.file");
   var localProperties = fs.existsSync(localPropertiesPath)
