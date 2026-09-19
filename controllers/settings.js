@@ -159,6 +159,7 @@ module.exports = {
           { $set: curSet, $setOnInsert: { settings_id: settingsID } },
           { upsert: true, setDefaultsOnInsert: true }
         ).then(function() {
+          Tools.invalidateSettingsCache();
           Tools.getSettings(viewModel, res, "settings", true);
         });
       };

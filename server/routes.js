@@ -57,7 +57,10 @@ var lastAuthenticationCleanup = 0;
 var messageUpload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 5 * 1024 * 1024
+    fileSize: 5 * 1024 * 1024,
+    files: 1,
+    fields: 10,
+    parts: 12
   },
   fileFilter: function(req, file, callback) {
     var allowedTypes = [
@@ -76,7 +79,9 @@ var articleUpload = multer({
   storage: multer.memoryStorage(),
   limits: {
     fileSize: 5 * 1024 * 1024,
-    files: 5
+    files: 5,
+    fields: 10,
+    parts: 20
   },
   fileFilter: function(req, file, callback) {
     var allowedTypes = [
@@ -93,18 +98,35 @@ var articleUpload = multer({
 });
 var settingsUpload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 2 * 1024 * 1024 },
+  limits: { fileSize: 2 * 1024 * 1024, files: 1, fields: 10, parts: 12 },
   fileFilter: function(req, file, callback) {
     callback(null, ["image/gif", "image/jpeg", "image/png"].indexOf(file.mimetype) !== -1);
   }
 });
 var profileUpload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 2 * 1024 * 1024 },
+  limits: { fileSize: 2 * 1024 * 1024, files: 1, fields: 10, parts: 12 },
   fileFilter: function(req, file, callback) {
     callback(null, ["image/gif", "image/jpeg", "image/png"].indexOf(file.mimetype) !== -1);
   }
 });
+// Multer only enforces a per-file size cap, so five attachments could still total
+// up to 25 MB in memory for one request; cap the combined size explicitly too.
+var ARTICLE_UPLOAD_TOTAL_BYTES = 15 * 1024 * 1024;
+function enforceArticleUploadTotalSize(req, res, next) {
+  var files = req.files || [];
+  var totalSize = files.reduce(function(sum, file) {
+    return sum + (file.size || 0);
+  }, 0);
+  if (totalSize > ARTICLE_UPLOAD_TOTAL_BYTES) {
+    req.flash("error", "Attachments in a single request must total 15 MB or less.");
+    var fallback = req.params && req.params.article_id
+      ? "/articles/" + req.params.article_id
+      : "/newArticle";
+    return res.redirect(fallback);
+  }
+  next();
+}
 function uploadMessageAttachment(req, res, next) {
   messageUpload.single("attachment")(req, res, function(err) {
     if (err) {
@@ -246,6 +268,7 @@ module.exports.initialize = async function(app, passport) {
   app.get("/home/searchbydate", home.date);
   app.get("/admin", isLoggedIn, admin.index);
   app.get("/admin/users/new", isLoggedIn, isAdmin, admin.createUserForm);
+  app.get("/admin/metrics", isLoggedIn, isAdmin, admin.metrics);
   app.get("/users/avatar/:email", function(req, res) {
     var email = String(req.params.email || "").trim().toLowerCase();
     var fallback = function() {
@@ -285,8 +308,8 @@ module.exports.initialize = async function(app, passport) {
   app.get("/articles/:article_id", article.index);
   app.get("/articles/:article_id/attachments/:attachment_id", article.attachment);
   app.post("/articles/:article_id/attachments/:attachment_id/delete", isLoggedIn, validateArticleCsrf, article.removeAttachment);
-  app.post("/articles", isLoggedIn, articleUpload.array("attachments", 5), validateArticleCsrf, article.create);
-  app.post("/articles/:article_id/attachments", isLoggedIn, articleUpload.array("attachments", 5), validateArticleCsrf, article.uploadAttachment);
+  app.post("/articles", isLoggedIn, articleUpload.array("attachments", 5), enforceArticleUploadTotalSize, validateArticleCsrf, article.create);
+  app.post("/articles/:article_id/attachments", isLoggedIn, articleUpload.array("attachments", 5), enforceArticleUploadTotalSize, validateArticleCsrf, article.uploadAttachment);
   app.post("/articles/:article_id/like", article.like);
   app.post("/articles/:article_id/comment", article.comment);
   app.delete("/articles/:article_id", isLoggedIn, article.remove);

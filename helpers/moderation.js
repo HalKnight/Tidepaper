@@ -1,5 +1,8 @@
-var modelPromise;
+var awsClient;
+var googleClient;
 var Settings = require("../models/settings");
+var moderationWorkerPool = require("./moderationWorkerPool");
+var Metrics = require("../server/metrics");
 var PropertiesReaderModule = require("properties-reader");
 var PropertiesReader = PropertiesReaderModule.default ||
   PropertiesReaderModule.propertiesReader ||
@@ -14,36 +17,14 @@ function configuredProvider() {
     });
 }
 
-function loadLocalModel() {
-  if (!modelPromise) {
-    modelPromise = Promise.all([
-      Promise.resolve().then(function() { return require("nsfwjs"); }),
-      Promise.resolve().then(function() { return require("@tensorflow/tfjs"); })
-    ]).then(function(modules) {
-      return modules[0].load().then(function(model) {
-        return {
-          model: model,
-          tf: modules[1]
-        };
-      });
-    });
-  }
-  return modelPromise;
-}
-
-function isUnsafe(predictions) {
-  return (predictions || []).some(function(prediction) {
-    var className = String(prediction.className || "").toLowerCase();
-    return ["porn", "hentai", "sexy"].indexOf(className) !== -1 && prediction.probability >= 0.65;
-  });
-}
-
 function checkAws(buffer) {
   var rekognition = require("@aws-sdk/client-rekognition");
-  var client = new rekognition.RekognitionClient({
-    region: process.env.AWS_REGION || "us-east-1"
-  });
-  return client.send(new rekognition.DetectModerationLabelsCommand({
+  if (!awsClient) {
+    awsClient = new rekognition.RekognitionClient({
+      region: process.env.AWS_REGION || "us-east-1"
+    });
+  }
+  return awsClient.send(new rekognition.DetectModerationLabelsCommand({
     Image: { Bytes: buffer },
     MinConfidence: 65
   })).then(function(result) {
@@ -59,8 +40,10 @@ function checkAws(buffer) {
 
 function checkGoogle(buffer) {
   var vision = require("@google-cloud/vision");
-  var client = new vision.ImageAnnotatorClient();
-  return client.safeSearchDetection({
+  if (!googleClient) {
+    googleClient = new vision.ImageAnnotatorClient();
+  }
+  return googleClient.safeSearchDetection({
     image: { content: buffer }
   }).then(function(results) {
     var safeSearch = results[0] && results[0].safeSearchAnnotation || {};
@@ -104,55 +87,17 @@ function checkAzure(buffer) {
 }
 
 function checkLocal(buffer, contentType) {
-  return loadLocalModel().then(function(runtime) {
-    var image = decodeImage(runtime.tf, buffer, contentType);
-    return runtime.model.classify(image).then(function(predictions) {
-      image.dispose();
-      if (isUnsafe(predictions)) {
-        throw new Error("Image failed Tidepaper safety moderation.");
-      }
-      return true;
-    }).catch(function(err) {
-      image.dispose();
-      throw err;
-    });
+  var startedAt = Date.now();
+  return moderationWorkerPool.classify(buffer, contentType).then(function(unsafe) {
+    Metrics.recordInferenceDuration(Date.now() - startedAt);
+    if (unsafe) {
+      throw new Error("Image failed Tidepaper safety moderation.");
+    }
+    return true;
+  }, function(err) {
+    Metrics.recordInferenceDuration(Date.now() - startedAt);
+    throw err;
   });
-}
-
-function decodeImage(tf, buffer, contentType) {
-  var detected = { mime: contentType };
-  var pixels;
-  var width;
-  var height;
-
-  if (detected && detected.mime === "image/jpeg") {
-    var jpeg = require("jpeg-js").decode(buffer, { useTArray: true });
-    pixels = jpeg.data;
-    width = jpeg.width;
-    height = jpeg.height;
-  } else if (detected && detected.mime === "image/png") {
-    var png = require("pngjs").PNG.sync.read(buffer);
-    pixels = png.data;
-    width = png.width;
-    height = png.height;
-  } else if (detected && detected.mime === "image/gif") {
-    var GifReader = require("omggif").GifReader;
-    var reader = new GifReader(buffer);
-    width = reader.width;
-    height = reader.height;
-    pixels = Buffer.alloc(width * height * 4);
-    reader.decodeAndBlitFrameRGBA(0, pixels);
-  } else {
-    throw new Error("This image format cannot be moderated locally.");
-  }
-
-  var rgb = new Uint8Array(width * height * 3);
-  for (var pixel = 0; pixel < width * height; pixel += 1) {
-    rgb[pixel * 3] = pixels[pixel * 4];
-    rgb[pixel * 3 + 1] = pixels[pixel * 4 + 1];
-    rgb[pixel * 3 + 2] = pixels[pixel * 4 + 2];
-  }
-  return tf.tensor3d(rgb, [height, width, 3], "int32");
 }
 
 module.exports = {

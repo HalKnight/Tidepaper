@@ -47,8 +47,10 @@ module.exports = {
     };
 
     return Promise.all([
-      Models.Message.find({ recipientEmail: email, read: false }, { senderEmail: 1, senderName: 1, subject: 1, body: 1, attachment: 1, read: 1, createdAt: 1 }).sort({ createdAt: -1 }).skip((page - 1) * pageSize).limit(pageSize).lean().exec(),
-      Models.Message.countDocuments({ recipientEmail: email, read: false })
+      Models.Message.find({ recipientEmail: email, read: false }, { senderEmail: 1, senderName: 1, subject: 1, body: 1, "attachment.filename": 1, "attachment.contentType": 1, "attachment.size": 1, read: 1, createdAt: 1 }).sort({ createdAt: -1 }).skip((page - 1) * pageSize).limit(pageSize).lean().exec(),
+      Tools.cachedCount("messages:unread:" + email, function() {
+        return Models.Message.countDocuments({ recipientEmail: email, read: false });
+      })
     ]).then(function(results) {
       viewModel.messages = results[0] || [];
       viewModel.unreadCount = results[1] || 0;
@@ -81,11 +83,15 @@ module.exports = {
     return Models.Message.find({
       recipientEmail: email,
       read: true
-    }, { senderEmail: 1, senderName: 1, subject: 1, body: 1, attachment: 1, read: 1, createdAt: 1 }).sort({ createdAt: -1 }).skip((page - 1) * pageSize).limit(pageSize).lean().exec().then(function(messages) {
+    }, { senderEmail: 1, senderName: 1, subject: 1, body: 1, "attachment.filename": 1, "attachment.contentType": 1, "attachment.size": 1, read: 1, createdAt: 1 }).sort({ createdAt: -1 }).skip((page - 1) * pageSize).limit(pageSize).lean().exec().then(function(messages) {
       viewModel.messages = messages || [];
       return Promise.all([
-        Models.Message.countDocuments({ recipientEmail: email, read: false }),
-        Models.Message.countDocuments({ recipientEmail: email, read: true })
+        Tools.cachedCount("messages:unread:" + email, function() {
+          return Models.Message.countDocuments({ recipientEmail: email, read: false });
+        }),
+        Tools.cachedCount("messages:read:" + email, function() {
+          return Models.Message.countDocuments({ recipientEmail: email, read: true });
+        })
       ]);
     }).then(function(counts) {
       viewModel.unreadCount = counts[0] || 0;
@@ -107,6 +113,8 @@ module.exports = {
     ).exec().then(function(result) {
       if (!result || result.matchedCount !== 1) {
         req.flash("error", "Message not found.");
+      } else {
+        Tools.invalidateUnreadCount(email);
       }
       return res.redirect("/messages");
     }).catch(function(err) {
@@ -178,6 +186,7 @@ module.exports = {
           });
           return message.save();
         }).then(function() {
+          Tools.invalidateUnreadCount(recipientEmail);
           req.flash("success_messages", "Message sent.");
           return res.redirect("/messages");
         });
@@ -221,12 +230,13 @@ module.exports = {
     return Models.Message.findOneAndUpdate(
       { _id: req.params.message_id, recipientEmail: email },
       { $set: { read: true } },
-      { returnDocument: "after" }
+      { returnDocument: "after", projection: { "attachment.data": 0 } }
     ).lean().exec().then(function(message) {
       if (!message) {
         return res.redirect("/messages");
       }
 
+      Tools.invalidateUnreadCount(email);
       var viewModel = {
         user: {},
         message: message,
@@ -250,6 +260,7 @@ module.exports = {
       if (!result || result.deletedCount !== 1) {
         req.flash("error", "Message not found.");
       } else {
+        Tools.invalidateUnreadCount(email);
         req.flash("success_messages", "Message deleted.");
       }
       return res.redirect("/messages");

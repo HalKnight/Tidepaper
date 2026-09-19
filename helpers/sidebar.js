@@ -27,8 +27,15 @@ var Stats = require('./stats'),
 	async = require('async');
 
 module.exports = function(viewModel, callback) {
+	// The stats panel only renders in the authenticated "user" layout, so skip
+	// the expensive aggregation on public pages that never display it.
+	var needsStats = viewModel.layout === 'user';
+
 	async.parallel([
 		function(next) {
+			if (!needsStats) {
+				return next(null, { articles: 0, comments: 0, views: 0, likes: 0 });
+			}
 			Stats(next);
 		},
 		function(next) {

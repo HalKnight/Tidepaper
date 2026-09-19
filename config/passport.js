@@ -26,6 +26,7 @@ var LocalStrategy = require("passport-local").Strategy;
 var passport = require("passport");
 var User = require("../models/user");
 var Article = require("../models/article");
+var Tools = require("../server/tools.js");
 
 function socialUrl(value) {
   var url = String(value || "").trim();
@@ -80,6 +81,7 @@ module.exports = function(passport) {
           newUser.local.admin = adminCount === 0;
           newUser.markModified("local");
           await newUser.save();
+          Tools.invalidateCount("admin:userCount");
           return done(null, newUser);
         } catch (err) {
           return done(err);

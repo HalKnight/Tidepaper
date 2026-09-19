@@ -59,4 +59,7 @@ CommentSchema.virtual("uniqueId").get(function() {
   return this.timestamp;
 });
 
+CommentSchema.index({ article_id: 1, timestamp: 1 });
+CommentSchema.index({ timestamp: -1 });
+
 module.exports = mongoose.model("Comment", CommentSchema);

@@ -68,6 +68,16 @@ module.exports = function(app) {
           // which would not match the /users/avatar/:email route.
           return "/users/avatar/" + encodeURIComponent(String(email || "").trim() || "guest");
         },
+        themeFontUrl: function(theme) {
+          var fontsByTheme = {
+            cyborg: "https://fonts.googleapis.com/css?family=Roboto:400,700",
+            flatly: "https://fonts.googleapis.com/css?family=Lato:400,700,400italic",
+            readable: "https://fonts.googleapis.com/css?family=Raleway:400,700",
+            solar: "https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700",
+            united: "https://fonts.googleapis.com/css?family=Ubuntu:400,700"
+          };
+          return fontsByTheme[theme] || "";
+        },
         allowProtoMethodsByDefault: true,
         allowProtoPropertiesByDefault: true,
         allowedProtoMethods: true
@@ -86,7 +96,18 @@ module.exports = function(app) {
   app.use(bodyParser.json());
   app.use(methodOverride());
 
-  app.use("/public/", express.static(path.join(__dirname, "../public")));
+  app.use("/public/", express.static(path.join(__dirname, "../public"), {
+    // Bundled assets are versioned with a "?v=" query string on release, so they
+    // can be cached for a long time; admin-replaceable uploads are not versioned
+    // and could go stale in place, so they keep a much shorter cache lifetime.
+    maxAge: "1y",
+    immutable: true,
+    setHeaders: function(res, filePath) {
+      if (/[\\/]upload[\\/]/.test(filePath)) {
+        res.setHeader("Cache-Control", "public, max-age=3600");
+      }
+    }
+  }));
 
   var isProduction = app.get("env") === "production";
   var localPropertiesPath = path.join(__dirname, "properties.local.file");

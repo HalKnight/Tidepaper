@@ -55,18 +55,32 @@ $(function() {
 		$(this).closest('.comments-panel').find('.post-comment').first().toggle();
 	});
 
-	$('#recipientSearch').off('input.recipientSearch').on('input.recipientSearch', function() {
-		var search = String($(this).val() || '').toLowerCase().trim();
-		$('#recipientEmail option').each(function() {
+	var $recipientSearch = $('#recipientSearch');
+	var $recipientSelect = $('#recipientEmail');
+	if ($recipientSearch.length && $recipientSelect.length) {
+		// Precompute each option's lowercase search text once instead of calling
+		// .toLowerCase() on every option for every keystroke.
+		var recipientOptions = $recipientSelect.find('option').map(function() {
 			var $option = $(this);
-			if (!$option.val()) {
-				$option.show();
-				return;
-			}
-			var searchable = String($option.data('search') || $option.text()).toLowerCase();
-			$option.toggle(!search || searchable.indexOf(search) !== -1);
+			return {
+				element: $option,
+				isPlaceholder: !$option.val(),
+				search: String($option.data('search') || $option.text()).toLowerCase()
+			};
+		}).get();
+
+		var recipientSearchTimer = null;
+		$recipientSearch.off('input.recipientSearch').on('input.recipientSearch', function() {
+			var $input = $(this);
+			clearTimeout(recipientSearchTimer);
+			recipientSearchTimer = setTimeout(function() {
+				var search = String($input.val() || '').toLowerCase().trim();
+				recipientOptions.forEach(function(entry) {
+					entry.element.toggle(entry.isPlaceholder || !search || entry.search.indexOf(search) !== -1);
+				});
+			}, 150);
 		});
-	});
+	}
 
 	$('.message-form').off('submit.messageForm').on('submit.messageForm', function() {
 		var form = this;

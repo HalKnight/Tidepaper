@@ -132,12 +132,11 @@ module.exports = {
 
               article.views = article.views + 1;
               viewModel.article = article;
-              var hydratedArticle = Models.Article.hydrate(article);
-              hydratedArticle.markModified("views");
-              hydratedArticle.save().catch(function(err) {
-                if (err) {
-                  console.error("Article view increment failed:", err);
-                }
+              Models.Article.updateOne(
+                { articleID: article.articleID },
+                { $inc: { views: 1 } }
+              ).exec().catch(function(err) {
+                console.error("Article view increment failed:", err);
               });
 
               viewModel.article.timestamp = article.timestamp =
@@ -148,7 +147,7 @@ module.exports = {
                 "/" +
                 article.timestamp.getFullYear();
 
-              ArticleAttachmentModel.find({ articleID: article.articleID }).lean().exec().then(function(attachments) {
+              ArticleAttachmentModel.find({ articleID: article.articleID }, { data: 0 }).lean().exec().then(function(attachments) {
                 viewModel.article.attachments = attachments || [];
                 return Models.Comment.find(
                 {
@@ -198,12 +197,11 @@ module.exports = {
 
           article.views = article.views + 1;
           viewModel.article = article;
-          var hydratedArticle = Models.Article.hydrate(article);
-          hydratedArticle.markModified("views");
-          hydratedArticle.save().catch(function(err) {
-            if (err) {
-              console.error("Article view increment failed:", err);
-            }
+          Models.Article.updateOne(
+            { articleID: article.articleID },
+            { $inc: { views: 1 } }
+          ).exec().catch(function(err) {
+            console.error("Article view increment failed:", err);
           });
 
           viewModel.article.timestamp = article.timestamp =
@@ -214,7 +212,7 @@ module.exports = {
             "/" +
             article.timestamp.getFullYear();
 
-          ArticleAttachmentModel.find({ articleID: article.articleID }).lean().exec().then(function(attachments) {
+          ArticleAttachmentModel.find({ articleID: article.articleID }, { data: 0 }).lean().exec().then(function(attachments) {
             viewModel.article.attachments = attachments || [];
             return Models.Comment.find(
             {
@@ -408,23 +406,27 @@ module.exports = {
   },
 
   like: function(req, res) {
-    Models.Article.findOne(
+    Models.Article.findOneAndUpdate(
       {
         articleID: req.params.article_id
+      },
+      {
+        $inc: { likes: 1 }
+      },
+      {
+        returnDocument: "after",
+        projection: { likes: 1 }
       }
-    ).exec().then(function(article) {
-        if (article) {
-          article.likes = article.likes + 1;
-          article.save().then(function() {
-            res.json({
-              likes: article.likes
-            });
-          }).catch(function(err) {
-            res.json(err);
-          });
+    ).lean().exec().then(function(article) {
+        if (!article) {
+          return res.status(404).json({ error: "Article not found." });
         }
+        res.json({
+          likes: article.likes
+        });
       }).catch(function(err) {
-        res.json(err);
+        console.error("Article like failed:", err);
+        res.status(500).json({ error: "The article could not be liked." });
       });
   },
   comment: function(req, res) {

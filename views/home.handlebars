@@ -99,4 +99,16 @@ SOFTWARE. -->
 	{{> articleComments this}}
 	</div>
 	{{/each}}
+	{{#if pagination}}
+	<nav class="text-center">
+		<ul class="pager">
+			{{#if pagination.hasPrevPage}}
+			<li><a href="/home?page={{pagination.prevPage}}">Previous</a></li>
+			{{/if}}
+			{{#if pagination.hasNextPage}}
+			<li><a href="/home?page={{pagination.nextPage}}">Next</a></li>
+			{{/if}}
+		</ul>
+	</nav>
+	{{/if}}
 </div>

@@ -90,7 +90,7 @@ function attachArticleAttachments(articles) {
     articleID: {
       $in: articleIds
     }
-  }).lean().exec().then(function(attachments) {
+  }, { data: 0 }).lean().exec().then(function(attachments) {
     var attachmentsByArticle = {};
     (attachments || []).forEach(function(attachment) {
       if (!attachmentsByArticle[attachment.articleID]) {
@@ -124,6 +124,9 @@ module.exports = {
     }
     viewModel.returnTo = req.originalUrl;
 
+    var pageSize = 20;
+    var page = Math.max(1, parseInt(req.query && req.query.page, 10) || 1);
+
     var articleQuery = {
       $nor: [
         { private: true },
@@ -132,16 +135,30 @@ module.exports = {
     };
     return ArticleModel.find(
       articleQuery,
-      {},
+      "title description articleID views likes userID userName private blogbody timestamp",
       {
         sort: {
-          timestamp: -1
-        }
+          timestamp: -1,
+          _id: -1
+        },
+        skip: (page - 1) * pageSize,
+        limit: pageSize + 1
       }
     ).lean().exec().then(function(articles) {
         if (!articles) {
           articles = [];
         }
+        var hasNextPage = articles.length > pageSize;
+        if (hasNextPage) {
+          articles = articles.slice(0, pageSize);
+        }
+        viewModel.pagination = {
+          page: page,
+          hasNextPage: hasNextPage,
+          hasPrevPage: page > 1,
+          nextPage: page + 1,
+          prevPage: page - 1
+        };
 
         var userEmails = articles
           .filter(function(article) {

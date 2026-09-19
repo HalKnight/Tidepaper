@@ -25,6 +25,7 @@ var User = require("../models/user");
 var Article = require("../models/article");
 var Comment = require("../models/comment");
 var Tools = require("../server/tools.js");
+var Metrics = require("../server/metrics");
 var sidebar = require("../helpers/sidebar");
 var PropertiesReaderModule = require("properties-reader");
 var PropertiesReader = PropertiesReaderModule.default ||
@@ -90,7 +91,9 @@ module.exports = {
 
       Promise.all([
         User.find({}, { "local.password": 0 }).sort({ "local.email": 1 }).skip(skip).limit(pageSize).lean().exec(),
-        User.countDocuments({})
+        Tools.cachedCount("admin:userCount", function() {
+          return User.countDocuments({});
+        })
       ]).then(function(results) {
         var users = results[0] || [];
         viewModel.userTotalPages = Math.max(Math.ceil(results[1] / pageSize), 1);
@@ -154,12 +157,22 @@ module.exports = {
         }).then(function() {
           return User.deleteOne({ _id: user._id });
         }).then(function() {
+          Tools.invalidateCount("admin:userCount");
           return res.redirect("/admin");
         });
       });
     }).catch(function(err) {
       console.error("Admin delete user failed:", err);
       return res.redirect("/admin");
+    });
+  },
+
+  metrics: function(req, res) {
+    res.json({
+      timestamp: new Date().toISOString(),
+      uptimeSeconds: Math.round(process.uptime()),
+      eventLoop: Metrics.getEventLoopStats(),
+      moderationInference: Metrics.getInferenceStats()
     });
   }
 };

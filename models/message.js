@@ -46,5 +46,6 @@ var MessageSchema = new mongoose.Schema({
 
 MessageSchema.index({ recipientEmail: 1, createdAt: -1 });
 MessageSchema.index({ senderEmail: 1, createdAt: -1 });
+MessageSchema.index({ recipientEmail: 1, read: 1, createdAt: -1 });
 
 module.exports = mongoose.model("Message", MessageSchema);

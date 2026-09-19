@@ -26,7 +26,7 @@ var UserModel = require("../models/user");
 var MessageModel = require("../models/message");
 var css = [
   {
-    css: "/public/css/readable.css"
+    css: "/public/css/readable.css?v=3.6.1"
   }
 ];
 var PropertiesReaderModule = require("properties-reader");
@@ -46,10 +46,73 @@ function normalizeTidepaperUrl(value) {
   return /^(https?:\/\/|\/)/i.test(url) ? url : "/home";
 }
 
+// Settings change rarely, so cache the document briefly instead of querying on
+// every page render; settings.js calls invalidateSettingsCache() after a save.
+var SETTINGS_CACHE_TTL_MS = 30 * 1000;
+var settingsCache = null;
+
+function fetchSettings() {
+  var now = Date.now();
+  if (settingsCache && settingsCache.expiresAt > now) {
+    return Promise.resolve(settingsCache.value);
+  }
+  return Settings.findOne({ settings_id: settingsID }).lean().exec().then(function(settings) {
+    settingsCache = { value: settings, expiresAt: Date.now() + SETTINGS_CACHE_TTL_MS };
+    return settings;
+  });
+}
+
+// Unread counts tolerate a short staleness window; mutation points below
+// (send/markRead/remove) invalidate the affected recipient's entry.
+var UNREAD_CACHE_TTL_MS = 10 * 1000;
+var unreadCountCache = new Map();
+
+function fetchUnreadCount(email) {
+  var now = Date.now();
+  var cached = unreadCountCache.get(email);
+  if (cached && cached.expiresAt > now) {
+    return Promise.resolve(cached.value);
+  }
+  return MessageModel.countDocuments({
+    recipientEmail: email,
+    read: false
+  }).then(function(count) {
+    unreadCountCache.set(email, { value: count, expiresAt: Date.now() + UNREAD_CACHE_TTL_MS });
+    return count;
+  }).catch(function(err) {
+    console.error("Unread message count failed:", err);
+    return 0;
+  });
+}
+
+// Generic short-lived cache for other pagination `countDocuments()` calls
+// (e.g. message inbox/read totals, admin user totals) so "Page X of Y" totals
+// don't require a fresh full-collection count on every page request.
+var COUNT_CACHE_TTL_MS = 15 * 1000;
+var countCache = new Map();
+
+function cachedCount(key, queryFn) {
+  var now = Date.now();
+  var cached = countCache.get(key);
+  if (cached && cached.expiresAt > now) {
+    return Promise.resolve(cached.value);
+  }
+  return queryFn().then(function(count) {
+    countCache.set(key, { value: count, expiresAt: Date.now() + COUNT_CACHE_TTL_MS });
+    return count;
+  });
+}
+
 module.exports = {
   loadCurrentUser: function(req, callback) {
     if (!req || !req.user || !req.user.local || !req.user.local.email) {
       return callback(null, {});
+    }
+
+    // Passport's deserializeUser already loaded this exact document for this
+    // request, so reuse it instead of issuing a duplicate lookup by email.
+    if (typeof req.user.toObject === "function") {
+      return callback(null, req.user.toObject());
     }
 
     UserModel.findOne({
@@ -59,6 +122,25 @@ module.exports = {
         callback(null, user || {});
       })
       .catch(callback);
+  },
+
+  cachedCount: cachedCount,
+
+  invalidateCount: function(key) {
+    countCache.delete(key);
+  },
+
+  invalidateSettingsCache: function() {
+    settingsCache = null;
+  },
+
+  invalidateUnreadCount: function(email) {
+    if (email) {
+      var normalizedEmail = String(email).trim().toLowerCase();
+      unreadCountCache.delete(normalizedEmail);
+      countCache.delete("messages:unread:" + normalizedEmail);
+      countCache.delete("messages:read:" + normalizedEmail);
+    }
   },
 
   getSettings: function(viewModel, res, page, editSettings) {
@@ -77,19 +159,14 @@ module.exports = {
     viewModel.lama.tidepaperIconUrl = "";
 
     var unreadMessagesPromise = viewModel.user && viewModel.user.local && viewModel.user.local.email
-      ? MessageModel.countDocuments({
-          recipientEmail: String(viewModel.user.local.email).trim().toLowerCase(),
-          read: false
-        }).catch(function(err) {
-          console.error("Unread message count failed:", err);
-          return 0;
-        })
+      ? fetchUnreadCount(String(viewModel.user.local.email).trim().toLowerCase())
       : Promise.resolve(0);
 
     Promise.all([
-      Settings.findOne({
-        settings_id: settingsID
-      }).lean().exec(),
+      // Settings edits need the freshest document, so bypass the cache for that page.
+      editSettings
+        ? Settings.findOne({ settings_id: settingsID }).lean().exec()
+        : fetchSettings(),
       unreadMessagesPromise
     ])
       .then(function(results) {
@@ -117,7 +194,7 @@ module.exports = {
 
           css = [
             {
-              css: "/public/css/" + settings.theme + ".css"
+              css: "/public/css/" + settings.theme + ".css?v=3.6.1"
             }
           ];
 

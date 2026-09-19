@@ -123,7 +123,7 @@ module.exports = {
           return res.redirect("/");
         }
 
-        return ArticleAttachmentModel.find({ articleID: article.articleID })
+        return ArticleAttachmentModel.find({ articleID: article.articleID }, { data: 0 })
           .lean().exec().then(function(attachments) {
             article.attachments = attachments || [];
             viewModel.article = article;

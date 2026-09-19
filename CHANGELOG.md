@@ -1,6 +1,18 @@
 # Changelog
 
-All notable changes made during the Tidepaper stabilization pass are recorded here.
+## 3.6.1 - 2026-09-18
+
+- Added pagination to the home article feed (20 per page) instead of loading every public article on every request.
+- Excluded binary attachment/message data from list and page queries, fetching it only from the dedicated download endpoints.
+- Added indexes for frequently queried and sorted fields on articles, comments, settings, and messages.
+- Added short-lived in-memory caching for settings, unread-message counts, site-wide statistics, and pagination totals, with explicit invalidation on the relevant writes; `Tools.loadCurrentUser` now reuses the session's already-loaded user instead of re-querying it.
+- Replaced read-modify-save article view and like counters with atomic `$inc` updates, removing a duplicate write and a lost-update race under concurrent traffic.
+- Enforced a combined upload-size cap for multi-file article attachments and hardened Multer's field/part limits, in addition to the existing per-file limits.
+- Moved local NSFWJS image moderation into a small worker-thread pool so inference no longer blocks the main event loop, reused AWS/Google moderation clients instead of recreating them per request, and added event-loop-lag and inference-latency metrics on an admin-only `/admin/metrics` endpoint.
+- Removed the render-blocking Google Fonts `@import` from each theme, replacing it with preconnect hints and non-blocking font loading.
+- Purged unused Bootstrap selectors from and minified all six theme stylesheets (roughly 75% smaller each), and enabled long-lived cache headers for static assets.
+- Debounced and precomputed the recipient search filter on the compose-message page instead of rescanning and re-lowercasing every option on each keystroke.
+- Updated shared asset cache versions and project documentation for the 3.6.1 release.
 
 ## 3.6.0 - 2026-09-18
 

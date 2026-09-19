@@ -76,4 +76,8 @@ ArticleSchema.virtual("date").get(function() {
   );
 });
 
+ArticleSchema.index({ articleID: 1 }, { unique: true });
+ArticleSchema.index({ private: 1, timestamp: -1 });
+ArticleSchema.index({ userID: 1, timestamp: -1 });
+
 module.exports = mongoose.model("Article", ArticleSchema);

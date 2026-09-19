@@ -26,7 +26,17 @@ SOFTWARE.
 var models = require("../models"),
   async = require("async");
 
+// Site-wide totals change slowly relative to page views, so cache the result
+// briefly instead of re-running two full-collection aggregations on every render.
+var STATS_CACHE_TTL_MS = 60 * 1000;
+var statsCache = null;
+
 module.exports = function(callback) {
+  var now = Date.now();
+  if (statsCache && statsCache.expiresAt > now) {
+    return callback(null, statsCache.value);
+  }
+
   async.parallel(
     [
       function(next) {
@@ -73,12 +83,17 @@ module.exports = function(callback) {
       }
     ],
     function(err, results) {
-      callback(null, {
+      if (err) {
+        return callback(null, statsCache ? statsCache.value : { articles: 0, comments: 0, views: 0, likes: 0 });
+      }
+      var value = {
         articles: results[0],
         comments: results[1],
         views: results[2],
         likes: results[3]
-      });
+      };
+      statsCache = { value: value, expiresAt: Date.now() + STATS_CACHE_TTL_MS };
+      callback(null, value);
     }
   );
 };
