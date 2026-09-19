@@ -27,8 +27,14 @@ var models = require('../models');
 
 module.exports = {
 	newest : function(callback) {
+		// The sidebar is shown to anonymous visitors too, so only ever surface
+		// comments on public articles here; private article comments/titles must
+		// not leak into this shared widget.
+		var CANDIDATE_LIMIT = 50;
+		var RESULT_LIMIT = 5;
+
 		models.Comment.find({}, {}, {
-			limit : 5,
+			limit : CANDIDATE_LIMIT,
 			sort : {
 				'timestamp' : -1
 			}
@@ -40,17 +46,23 @@ module.exports = {
 				});
 
 				return models.Article.find({
-					articleID: { $in: articleIds }
+					articleID: { $in: articleIds },
+					private: { $ne: true }
 				}).lean().exec().then(function(articles) {
 					var articlesById = {};
 					(articles || []).forEach(function(article) {
 						articlesById[article.articleID] = article;
 					});
 
-					comments.forEach(function(comment) {
-						comment.article = articlesById[comment.article_id] || null;
-					});
-					return comments;
+					return comments
+						.filter(function(comment) {
+							return !!articlesById[comment.article_id];
+						})
+						.slice(0, RESULT_LIMIT)
+						.map(function(comment) {
+							comment.article = articlesById[comment.article_id];
+							return comment;
+						});
 				});
 			})
 			.then(function(comments) {
